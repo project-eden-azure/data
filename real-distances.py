@@ -69,6 +69,11 @@ class SimpleMapReduce(object):
 def measure(lat1, lon1, lat2, lon2):
 	lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
 	R = 6378.137 # Radius of earth in kilometres
+	
+	# dLat1 = log(lat2) + log(pi) - log(180)
+	# dlat2 = log(lat1) + log(pi) - log(180)
+	# dLay = exp( logsumexp( dLat1, dlat2 ) )
+	
 	dLat = lat2 * math.pi / 180 - lat1 * math.pi / 180
 	dLon = lon2 * math.pi / 180 - lon1 * math.pi / 180
 	a = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(lat1 * math.pi / 180) * math.cos(lat2 * math.pi / 180) * math.sin(dLon/2) * math.sin(dLon/2)
