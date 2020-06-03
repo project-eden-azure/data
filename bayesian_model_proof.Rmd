@@ -108,10 +108,10 @@ time_spent_in_grid[ , {
 
 Overall prediction is just the sum of all the travel times. The posterior predicted travel time is just the sum.
 ```{r}
-hist( rowSums( x ), breaks = 100 )
-abline( v = time_spent_in_grid[ , sum(time_spent) ], col = "red",
+hist( rowSums( x ), breaks = 100,
     main = "Posterior predicted trip time",
     xlab = "Trip time in seconds" )
+abline( v = time_spent_in_grid[ , sum(time_spent) ], col = "red" )
 ```
 
 # Problems and things to do:
