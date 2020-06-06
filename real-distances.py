@@ -70,12 +70,13 @@ def measure(lat1, lon1, lat2, lon2):
 	lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
 	R = 6378.137 # Radius of earth in kilometres
 	
+	# Latitudes/longitudes may be negative so log may not work
 	# dLat1 = log(lat2) + log(pi) - log(180)
 	# dlat2 = log(lat1) + log(pi) - log(180)
 	# dLay = exp( logsumexp( dLat1, dlat2 ) )
 	
-	dLat = lat2 * math.pi / 180 - lat1 * math.pi / 180
-	dLon = lon2 * math.pi / 180 - lon1 * math.pi / 180
+	dLat = (lat2  - lat1) * math.pi / 180
+	dLon = (lon2 - lon1) * math.pi / 180
 	a = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(lat1 * math.pi / 180) * math.cos(lat2 * math.pi / 180) * math.sin(dLon/2) * math.sin(dLon/2)
 	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
 	d = R * c
@@ -107,7 +108,9 @@ def reduce_function(bundle):
 		distance = measure(items[index][1], items[index][2], items[index-1][1], items[index-1][2])
 		total_distance += distance
 
-	return (key, total_distance)
+	total_time = sorted_items[-1][0] - sorted_items[0][0]
+	average_speed = total_distance * 1000 / total_time
+	return (key, total_distance, average_speed)
 
 # Run the distance 
 if __name__ == '__main__':
@@ -117,6 +120,6 @@ if __name__ == '__main__':
 	mapper = SimpleMapReduce(map_function, reduce_function)
 	distances = mapper(input_files)
 
-	df = pd.DataFrame(distances, columns=['ID', 'km'])
+	df = pd.DataFrame(distances, columns=['ID', 'km', 'average_speed'])
 
 	df.to_csv("distances_km.csv", index=False)

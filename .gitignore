@@ -5,3 +5,4 @@
 *.RData
 *.Rhistory
 .Rproj.user
+mini.parquet
