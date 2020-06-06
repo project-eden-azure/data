@@ -1,0 +1,176 @@
+---
+title: 'Deriving variables: Speed'
+author: "Don Li"
+date: "05/06/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data and stuff
+
+```{r eval = FALSE}
+library( data.table )
+load( "../../dataset/test_subset.RData" )
+dataset = subdata
+rm( subdata )
+source( "utility.R" )
+save( dataset, file = "derive_vars_speed.RData" )
+```
+
+# What are we doing?
+
+In this document, we want to consider predicting average journey speed. You will note that in the model inputs, speed is not a given input:
+
+* latitude_origin
+* longitude_origin
+* latitude_destination
+* longitude_destination
+* hour_of_day
+* day_of_week
+
+Clearly, speed is a useful variable if we want to predict ETA. Ideally, we would want speed sampled throughout the journey. But without additional information, I cannot do that. Therefore, we will just start with the mean journey speed.
+
+Because speed is kind of weird to calculate, I will use a proxy variable: `N`, the number of GPS pings during the trip. When we combine this with distance, we can obtain a speed measure.
+
+# Variables
+
+Our covariates are at the trip-level. These are variables that we have in the existing data. We have:
+
+* Total Haversine distance
+* Path Haversine distance
+* Path Haversine distance 2, (longs and lats reversed)
+* Start latitude
+* Start longitude
+* End latitude
+* End longitude
+* Weekday
+* Hour
+* Rush hour (No, Night, Morning)
+* Number of pings during the trip (N)
+
+
+```{r eval = FALSE}
+summary_data = dataset[ , {
+    indices = c(1,.N)
+    
+    lat_diff = diff( rawlat[indices] )
+    lng_diff = diff( rawlng[indices] )
+    total_dist = haversine( rawlat[indices], rawlng[indices] )
+    haver_dist = sum(H_dist)
+    haver_dist2 = sum(H_dist2)
+    timediff = difftime( date[.N], date[1], units = "s" )
+    timediff = as.numeric(timediff)
+
+    start_x = rawlat[1]
+    start_y = rawlng[1]
+    end_x = rawlat[.N]
+    end_y = rawlng[.N]
+    
+    weekday_ = weekday[1]
+    hour_ = hour[1]
+    rush_hour_ = rush_hour[1]
+    N = .N
+
+    list( 
+        timediff = timediff,
+        total_dist = total_dist, haver_dist = haver_dist, haver_dist2 = haver_dist2,
+        weekday_ = weekday_, hour_ = hour_, rush_hour = rush_hour_,
+        start_x = start_x, start_y = start_y, 
+        end_x = end_x, end_y = end_y, 
+        N = N)
+}, by = "trj_id" ]
+
+split = split_dataset( summary_data, seed = 1, p = 0.75 )
+training_set = split$train
+test_set = split$test
+save( dataset, summary_data, training_set, test_set, 
+    file = "derive_vars_speed.RData" )
+```
+
+Make some percentile covariates
+```{r eval = FALSE}
+quant_vars = c("total_dist", "haver_dist", "haver_dist2", "start_x", "start_y",
+    "end_x", "end_y" )
+sapply( quant_vars, function( var_ ){
+    print( var_ )
+    theoretical_percentiles( training_set, test_set, var_ )
+    NULL
+} )
+
+save( dataset, summary_data, training_set, test_set, 
+    file = "derive_vars_speed.RData" )
+```
+
+# Models for the speed
+
+Linear model
+```{r}
+model_vars = setdiff( names(training_set), c("trj_id") )
+training_set[ , trj_id := NULL ]
+lm_ = lm( N ~ .*. + 
+        weekday_ * I(total_dist^2) +
+        weekday_ * I(hour_^2) +
+        weekday_ * I(haver_dist^2) +
+        I(total_dist^3) + I(haver_dist^3) + I(haver_dist2^3) + I(hour_^3), 
+    training_set[ , mget(model_vars) ][1:5000] )
+
+s = summary(lm_)
+s$adj.r.squared
+speed_rmse = do_rmse( lm_, test_set, "N" )
+speed_rmse
+```
+
+Ridge
+```{r}
+test_set[ , trj_id := NULL ]
+test_set[ , N_p := NULL ]
+model_str = "N ~ .*. + 
+        weekday_ * I(total_dist^2) +
+        weekday_ * I(hour_^2) +
+        weekday_ * I(haver_dist^2) +
+        I(total_dist^3) + I(haver_dist^3) + I(haver_dist2^3) + I(hour_^3) + 0"
+
+library( glmnet )
+x = model.matrix( as.formula(model_str), training_set )
+y = training_set$N
+
+enet0 = glmnet( x = x, y = y, alpha = 0 , lambda = seq(1, 0, by = -0.001) )
+
+newx = model.matrix( as.formula( model_str ), test_set )
+
+enet_pred = predict( enet0, newx = newx )
+enet_rmse = sqrt( colMeans( (enet_pred - test_set$N)^2 ) )
+
+best_ridge = which.min(enet_rmse)
+enet_rmse[ best_ridge ]
+```
+
+Random Forest
+```{r}
+library( randomForest )
+
+rf = randomForest( N ~ ., training_set[1:5000], ntree = 2000, maxnodes = 1000,
+    mtry = 17)
+
+plot(rf)
+
+sqrt( mean( (predict( rf, test_set ) - test_set$N)^2  ) )
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+

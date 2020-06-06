@@ -1,0 +1,352 @@
+---
+title: "deriving_landmarks"
+author: "Don Li"
+date: "06/06/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library( data.table )
+library( RgoogleMaps )
+load( "../../dataset/all_SNG.RData" )
+```
+
+# Purpose
+
+Derive landmark locations and use this to group the data better.
+
+Approaches:
+
+* Use Google Places API or something like that to determine what locations people are going to
+* Use statistics
+
+I will use the second one because I don't know how to make an API work.
+
+# Data and stuff
+## K-means
+Use k-means clustering (Hartigan-Wong) on the start and end points.
+
+```{r eval = FALSE}
+load( "../../dataset/all_SNG.RData" )
+
+kmeans_map = function( data, centers, nstart, iter.max, trace = F ){
+    # Data needs a column of latitudes and longitudes
+    kmeans_result = kmeans( data, centers = centers, 
+        nstart = nstart, iter.max = iter.max, trace = trace )
+    kmeans_result
+}
+
+predict_kmeans = function(object, newdata){
+    centers = object$centers
+    n_centers = nrow(centers)
+    dist_mat = as.matrix(dist(rbind(centers, newdata)))
+    dist_mat = dist_mat[-seq(n_centers), seq(n_centers)]
+    max.col(-dist_mat)
+}
+
+start_end_data = all_data[ , 
+    list( 
+        lat1 = rawlat[1], lng1 = rawlng[1],
+        latN = rawlat[.N], lngN = rawlng[.N] 
+    ), by = "trj_id" ]
+
+kmeans_data = start_end_data[ , {
+    cbind( 
+        lats = c( lat1, latN), 
+        lngs = c(lng1, lngN )
+    ) } ]
+
+kmeans_result = kmeans_map( kmeans_data, centers = 300, nstart = 1000, iter.max = 1e9 )
+
+save( kmeans_result, start_end_data, kmeans_data, file = "deriving_landmarks_kmeans.RData" )
+```
+
+Put these points on a map
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+load( "deriving_landmarks_kmeans.RData" )
+
+SNG_coords = c(1.3521, 103.8198)
+SNG = GetMap( SNG_coords, zoom = 11 )
+
+plot_pts = copy( start_end_data )
+
+rescale_lat = function( lat, SNG ){
+    (lat - SNG$BBOX$ll[,"lat"]) / ( SNG$BBOX$ur[,"lat"] - SNG$BBOX$ll[,"lat"] )
+}
+rescale_lng = function( lng, SNG ){
+    (lng - SNG$BBOX$ll[,"lon"]) / ( SNG$BBOX$ur[,"lon"] - SNG$BBOX$ll[,"lon"] )
+}
+
+plot_pts = plot_pts[ , {
+    rescale_lat1 = rescale_lat( lat1, SNG )
+    rescale_lng1 = rescale_lng( lng1, SNG )
+    rescale_latN = rescale_lat( latN, SNG )
+    rescale_lngN = rescale_lng( lngN, SNG )
+    list( rescale_lat1 = rescale_lat1, rescale_lng1 = rescale_lng1,
+        rescale_latN = rescale_latN, rescale_lngN = rescale_lngN )
+    } ]
+
+PlotOnStaticMap( SNG )
+pt_col = rgb(red = 0, green = 0, blue = 0, alpha = 0.25)
+plot_pts[ , points( rescale_lng1, rescale_lat1, pch = 20, col = pt_col, cex = 0.5 ) ]
+plot_pts[ , points( rescale_lngN, rescale_latN, pch = 20, col = pt_col, cex = 0.5 ) ]
+rescale_kmean_pts = cbind(
+    rescale_lat( kmeans_result$centers[,1], SNG ),
+    rescale_lng( kmeans_result$centers[,2], SNG )
+)
+pt_col2 = rgb(red = 0, green = 0, blue = 1, alpha = 0.5)
+points( rescale_kmean_pts[,2], rescale_kmean_pts[,1], col = pt_col2, pch = 16, cex = 2 )
+
+```
+
+## K-means with outliers removed
+I want to automatically detect high transit destinations. In order to do this, I will filter the points that have no neighbours within 500m. 
+
+```{r eval = FALSE}
+min_dist_km = 0.5
+isolated_pts = rep( F, nrow( kmeans_data ) )
+for ( i in 1:length(isolated_pts) ){
+    if ( i %% 100 == 0 ) print( i )
+    all_haversines = haversine2( kmeans_data[i,,drop = F], kmeans_data )
+    isolated = (sum(all_haversines < min_dist_km) - 1 ) == 0
+    if ( isolated ){
+        isolated_pts[i] = T
+    }
+}
+
+new_keans_data = kmeans_data[ !isolated_pts, ]
+
+set.seed(312)
+kmeans_result2 = kmeans_map( new_keans_data, centers = 300, 
+    nstart = 1000, iter.max = 1e9 )
+save( new_keans_data, kmeans_result2, file = "deriving_landmarks_kmeans2.RData" )
+```
+
+In my opinion, the clustering is nicer, especially around Jurong Island.
+
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+load( "deriving_landmarks_kmeans2.RData" )
+PlotOnStaticMap( SNG )
+pt_col = rgb(red = 0, green = 0, blue = 0, alpha = 0.25)
+plot_pts[ , points( rescale_lng1, rescale_lat1, pch = 20, col = pt_col, cex = 0.5 ) ]
+plot_pts[ , points( rescale_lngN, rescale_latN, pch = 20, col = pt_col, cex = 0.5 ) ]
+
+rescale_kmean_pts = cbind(
+    rescale_lat( kmeans_result2$centers[,1], SNG ),
+    rescale_lng( kmeans_result2$centers[,2], SNG )
+)
+
+pt_col2 = rgb(red = 1, green = 0, blue = 0, alpha = 0.5)
+points( rescale_kmean_pts[,2], rescale_kmean_pts[,1], col = pt_col2, pch = 16, cex = 2 )
+```
+
+Overlay the two clusters to see how they differ. Picture below. Red is the clustering with the outliers removed. Blue is the clustering with the outliers in (first clustering). Expect some randomness due to the k-means clustering. But, the outliers removed tends to make a lot of random stuff. For example, down the road from Pasir Gudang, the outerlier removed (red) makes one cluster, while the outlier kept (red) makes two.
+
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+PlotOnStaticMap( SNG )
+pt_col = rgb(red = 0, green = 0, blue = 0, alpha = 0.25)
+plot_pts[ , points( rescale_lng1, rescale_lat1, pch = 20, col = pt_col, cex = 0.5 ) ]
+plot_pts[ , points( rescale_lngN, rescale_latN, pch = 20, col = pt_col, cex = 0.5 ) ]
+
+rescale_kmean_pts = cbind(
+    rescale_lat( kmeans_result2$centers[,1], SNG ),
+    rescale_lng( kmeans_result2$centers[,2], SNG )
+)
+
+pt_col2 = rgb(red = 1, green = 0, blue = 0, alpha = 0.5)
+points( rescale_kmean_pts[,2], rescale_kmean_pts[,1], col = pt_col2, pch = 16, cex = 2 )
+
+rescale_kmean_pts = cbind(
+    rescale_lat( kmeans_result$centers[,1], SNG ),
+    rescale_lng( kmeans_result$centers[,2], SNG )
+)
+pt_col3 = rgb(red = 0, green = 0, blue = 1, alpha = 0.5)
+points( rescale_kmean_pts[,2], rescale_kmean_pts[,1], col = pt_col3, pch = 16, cex = 2 )
+```
+
+# Stacking clustering algorithms
+
+Using the results from K-means (outliers removed), we can link clusters together using DBSCAN. This is useful for points like the airport, where there is a whole collection of points in a row.
+
+The results below show the linkage of the K-means centers using DBSCAN. In particular, look at the orange points at the airport (labeled "2"), also at some points in the city center. We can use this cluster information to classify trips based on start or end.
+
+```{r eval = FALSE}
+library( dbscan )
+set.seed(42323)
+dbscan_results = dbscan( kmeans_result2$centers, minPts = 1, eps = 0.0055 )
+k2_centers = data.table(
+    cbind( kmeans_result2$centers, size = kmeans_result2$size,
+        cluster = dbscan_results$cluster )
+)
+k2_centers[ , total_size := sum(size), by = "cluster" ]
+big_clusters = k2_centers[ total_size > 500 ]
+save( dbscan_results, big_clusters, file = "deriving_landmarks_dbscan.RData" )
+```
+
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+load( "deriving_landmarks_dbscan.RData" )
+PlotOnStaticMap( SNG )
+pt_col = rgb(red = 0, green = 0, blue = 0, alpha = 1)
+colours = c("red", "blue", "green", "orange", "yellow", "brown", "purple",
+    "tan", "grey", "darksalmon", "cyan", "darkorchid", "tomato", "wheat")
+d = kmeans_result2$centers
+for ( i in unique(dbscan_results$cluster) ){
+    pts_ = d[ dbscan_results$cluster == i,, drop = F ]
+    rescale_pts = cbind(
+        rescale_lat( pts_[,1], SNG ),
+        rescale_lng( pts_[,2], SNG )
+    )
+    
+    cols = colours[ ((i+1) %% length(colours))+1 ]
+    points( rescale_pts[,2], rescale_pts[,1], col = cols, pch = 20, cex = 2 )
+    text( rescale_pts[,2], rescale_pts[,1], i )
+}
+
+```
+
+Count up the size of each cluster from K-means, summed over the cluster membership from DBSCAN and plot only the clusters with more than 100 total.
+
+```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+PlotOnStaticMap( SNG )
+pt_col = rgb(red = 0, green = 0, blue = 0, alpha = 1)
+colours = c("red", "blue", "green", "orange", "yellow", "brown", "purple",
+    "tan", "grey", "darksalmon", "cyan", "darkorchid", "tomato", "wheat")
+d = big_clusters
+
+for ( i in unique(d$cluster) ){
+    pts_ = d[ cluster == i,, drop = F ]
+    rescale_pts = cbind(
+        rescale_lat( pts_[,1], SNG ),
+        rescale_lng( pts_[,2], SNG )
+    )
+    
+    cols = colours[ ((i+1) %% length(colours))+1 ]
+    points( rescale_pts[,lngs], rescale_pts[,lats], col = cols, pch = 20, cex = 2 )
+    text( rescale_pts[,lngs], rescale_pts[,lats], i )
+}
+```
+
+
+
+# Proof of concept
+
+To show that this was not for nothing, we can look at trips to specific places.
+
+We can see below that a trip to the airport does take longer than other trips.
+
+```{r echo = FALSE, fig.height=3,fig.width=4}
+source( "utility.R" )
+# Changi airport
+destination_coord = c(1.359167, 103.989441)
+
+trips_from_airport = all_data[ , {
+    indices = c(1,.N)
+    coord_init = c( rawlat[.N], rawlng[.N] )
+    coord_matrix = rbind( coord_init, destination_coord )
+    x = haversine(coord_matrix[,1], coord_matrix[,2])
+    total_dist = haversine( rawlat[indices], rawlng[indices] )
+    timediff = difftime( date_[.N], date_[1], units = "s" )
+    timediff = as.numeric(timediff)
+    
+    list( airport_dist = x, total_dist = total_dist, timediff = timediff )
+}, by = "trj_id" ]
+
+trips_from_airport[ , airport_trip := airport_dist <= 1 ]
+trips_from_airport[ , {
+    boxplot( timediff ~ airport_trip, ylim = c(0, 5000) )
+    NULL} ]
+```
+
+Similarly, trips to the airport also take longer.
+
+```{r echo = FALSE, fig.height=3,fig.width=4}
+# Changi airport
+destination_coord = c(1.359167, 103.989441)
+
+trips_to_airport = all_data[ , {
+    indices = c(1,.N)
+    coord_init = c( rawlat[1], rawlng[1] )
+    coord_matrix = rbind( coord_init, destination_coord )
+    x = haversine(coord_matrix[,1], coord_matrix[,2])
+    total_dist = haversine( rawlat[indices], rawlng[indices] )
+    timediff = difftime( date_[.N], date_[1], units = "s" )
+    timediff = as.numeric(timediff)
+    
+    list( airport_dist = x, total_dist = total_dist, timediff = timediff )
+}, by = "trj_id" ]
+
+trips_to_airport[ , airport_trip := airport_dist <= 1 ]
+trips_to_airport[ , {
+    boxplot( timediff ~ airport_trip, ylim = c(0, 5000) )
+    NULL} ]
+```
+
+We can do things more algorithmically:
+
+```{r echo = FALSE, fig.height=16,fig.width=12}
+summary_data = all_data[ , {
+    indices = c(1,.N)
+    total_dist = haversine( rawlat[indices], rawlng[indices] )
+    timediff = difftime( date_[.N], date_[1], units = "s" )
+    timediff = as.numeric(timediff)
+    
+    list( start_lat = rawlat[1], start_lng = rawlng[1], 
+        end_lat = rawlat[.N], end_lng = rawlng[.N], 
+        total_dist = total_dist, timediff = timediff )
+}, by = "trj_id" ]
+
+cluster_names = paste0( "C", big_clusters$cluster )
+dbscan_big_clusters_mat = as.matrix(big_clusters)
+
+summary_data[ , trip_start := {
+    start_ = matrix( c(start_lat, start_lng), ncol = 2, nrow = 1 )
+    x = haversine2( start_, dbscan_big_clusters_mat[,1:2] )
+    closest_pt = which.min(x)
+    if ( x[ closest_pt ] < 2 ){
+        trip_ = cluster_names[ closest_pt ]
+    } else{
+        trip_ = "generic"
+    }
+    trip_
+}, by = "trj_id" ]
+
+summary_data[ , trip_end := {
+    start_ = matrix( c(end_lat, end_lng), ncol = 2, nrow = 1 )
+    x = haversine2( start_, dbscan_big_clusters_mat[,1:2] )
+    closest_pt = which.min(x)
+    if ( x[ closest_pt ] < 2 ){
+        trip_ = cluster_names[ closest_pt ]
+    } else{
+        trip_ = "generic"
+    }
+    trip_
+}, by = "trj_id" ]
+summary_data[ , {
+    boxplot( timediff ~ trip_start,
+        ylab = "Time diff (s)",
+        ylim = c(0, 5000),
+        horizontal = T, las = 1)
+    invisible(NULL)
+} ]
+
+summary_data[ , {
+    boxplot( timediff ~ trip_end,
+        ylab = "Time diff (s)",
+        ylim = c(0, 5000),
+        horizontal = T, las = 1)
+    invisible(NULL)
+} ]
+summary_data[ , trip_Factor := as.factor( trip_start ) ]
+summary_data[ , trip_Factor2 := as.factor( trip_end ) ]
+
+summary_data[ , tdiff2 := {
+    timediff - mean(timediff[trip_Factor == "generic" & trip_Factor2 == "generic"])
+} ]
+summary( lm( tdiff2 ~ relevel(trip_Factor, ref = "generic") +
+        relevel(trip_Factor2, ref = "generic"), data = summary_data ) )
+```
+
+# Conclusion
+
+We can see that classifying trips could be a useful covariate.

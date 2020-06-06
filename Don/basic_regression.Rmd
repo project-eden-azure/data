@@ -87,7 +87,7 @@ Our most basic model is regressing the estimated time of arrival based on trip-l
 We will also add additional variables, such as the mean speed over the trip (`speed_avg`) and also the variance fo the speed (`speed_var`). We also use the Euclidean distance (`dist_`).
 
 ```{r eval = FALSE}
-training_set = dataset[ , {
+summary_data = dataset[ , {
     indices = c(1,.N)
     
     lat_diff = diff( rawlat[indices] )
@@ -110,7 +110,7 @@ training_set = dataset[ , {
         speed_var = speed_var, weekday_ = weekday_,
         hour_ = hour_, min_ = min_, month_ = month_)
 }, by = "trj_id" ]
-save( dataset, training_set, file = "Don/regression1.RData" )
+save( dataset, summary_data, file = "Don/regression1.RData" )
 ```
 
 # Exploratory analysis
