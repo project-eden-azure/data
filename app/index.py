@@ -20,21 +20,35 @@ def index_page():
 @app.route('/query', methods = ['GET'])
 def query_page():
 	# Check all parameters are filled in
-	necessary = ['lat', 'lng', 'hour', 'weekday']
+	necessary = ['originLat', 'originLong', 'destinationLat', 'destinationLong', 'hour', 'weekday']
 	for parameter in necessary:
 		if not request.args.get(parameter):
-			return "Missing inputs: <em>{}</em> not found.".format(parameter), 500
+			return "Missing inputs: <em>{}</em> not found.".format(parameter), 400
 
-	lat = request.args.get('lat')
-	lng = request.args.get('lng')
+	lat1 = request.args.get('originLat')
+	lng1 = request.args.get('originLong')
+	lat2 = request.args.get('destinationLat')
+	lng2 = request.args.get('destinationLong')
 	hour = request.args.get('hour')
 	weekday = request.args.get('weekday')
+
+	# Validate data
+	# TODO
+	try:
+		hour = int(hour)
+		weekday = int(weekday)
+	except:
+		return "Invalid hour or weekday - should be numbers between 0-23 and 1-7.", 422
+	if hour < 0 or hour > 23:
+		return "Invalid hour: {}".format(hour), 422
+	if weekday < 1 or weekday > 7:
+		return "Invalid weekday: {}".format(weekday), 422
 
 	# Make a prediction
 	# TODO
 
 	# Return the predicted ETA
-	return "Successfully received inputs: {}, {}, {}, {}".format(lat, lng, hour, weekday)
+	return "Successfully received inputs: {}, {}, {}, {}, {}, {}".format(lat1, lng1, lat2, lng2, hour, weekday)
 
 if __name__ == "__main__":
 	app.debug = False

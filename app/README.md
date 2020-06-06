@@ -10,4 +10,4 @@ Or:
 
 `python index.py`
 
-Go to `localhost/query?lat=LAT&lng=LNG&hour=HOUR&weekday=WEEKDAY` to generate predictions (when a model is done).
+Go to `localhost/query?originLat=LAT&originLong=LNG&destinationLat=LAT&destinationLong=LNG&hour=HOUR&weekday=WEEKDAY` to generate predictions (when a model is done).
