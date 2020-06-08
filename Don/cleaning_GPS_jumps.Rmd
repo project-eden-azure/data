@@ -1,5 +1,5 @@
 ---
-title: "Imputing bad pings"
+title: "Imputing jumps in GPS location"
 author: "Don Li"
 date: "08/06/2020"
 output: pdf_document
@@ -7,6 +7,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library( data.table )
 ```
 
 # What are we doing?
@@ -150,7 +151,7 @@ all_data[ , c("H_dist", "H_dist2") := {
 ```
 
 Try to find some trips with big jumps.
-```{r}
+```{r fig.height=10, fig.width=10}
 par( mfrow= c(3,3))
 bad_trips = all_data[ H_dist > 5, unique(trj_id) ]
 for ( trj in bad_trips[1:9] ){
@@ -181,7 +182,7 @@ all_data[ trj_id == trip, {
 ```
 
 Try again:
-```{r}
+```{r fig.height=10, fig.width=10}
 par( mfrow= c(5,5))
 bad_trips = all_data[ H_dist > 5, unique(trj_id) ]
 for ( trj in bad_trips[1:25 + 9] ){
@@ -196,7 +197,8 @@ Seems okay.
 # Round 2
 
 Try detecting bad jumps with a smaller threshold
-```{r echo=FALSE}
+
+```{r echo = FALSE, fig.height=10, fig.width=10}
 bad_trips = all_data[ , {
     missing_dist = which( two_window_threshold( H_dist, 3 ) )
 }, by = "trj_id" ][ , trj_id ]
@@ -236,7 +238,7 @@ all_data[ , c("H_dist", "H_dist2") := {
 ```
 
 # Round 3
-```{r echo=FALSE}
+```{r echo = FALSE, fig.height=10, fig.width=10}
 bad_trips = all_data[ , {
     missing_dist = which( two_window_threshold( H_dist, 2 ) )
 }, by = "trj_id" ][ , unique(trj_id) ]
