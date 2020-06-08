@@ -27,7 +27,6 @@ for ( i in rdata_files ){
 
 all_data[ , bearing := NULL ]
 all_data[ , accuracy := NULL ]
-all_data[ , osname := NULL ]
 
 rm( list = setdiff( ls(), "all_data") )
 gc()
@@ -69,21 +68,36 @@ all_data[ , rush_hour := {
 
 source( "../data/Don/utility.R" )
 
-all_data[ , H_dist := {
+all_data[ , c("H_dist", "H_dist2") := {
     h_dist = haversine( rawlat, rawlng )
-    c( 0, h_dist  )
+    h1 = c( 0, h_dist  )
+    h_dist2 = haversine( rawlng, rawlat )
+    h2 = c( 0, h_dist2 )
+    list( h1, h2 )
 }, by = "trj_id" ]
-all_data[ , H_dist2 := {
-    h_dist = haversine( rawlng, rawlat )
-    c( 0, h_dist  )
-}, by = "trj_id" ]
+
+# all_data[ , H_dist2 := {
+#     h_dist = haversine( rawlng, rawlat )
+#     c( 0, h_dist  )
+# }, by = "trj_id" ]
+
+all_data[ , time_diff := {
+    time_diff = difftime( date_[-1], date_[-.N], units = "s" )
+    time_diff = c( 0, time_diff )
+    time_diff
+    }, by = "trj_id" ]
+
+two_window_threshold = function( x, threshold ){
+    (x > threshold) & (c( x[-1], F ) > threshold)
+}
+# all_data[ , c("H_dist", "H_dist2", "speed") := {
+#     big_jumps = two_window_threshold(H_dist, 5)
+#     H_dist[ big_jumps ] = NaN
+#     H_dist2[ big_jumps ] = NaN
+#     speed[ big_jumps ] = NaN
+#     list( H_dist, H_dist2, speed )
+# }, by = "trj_id" ]
+# 
+# all_data[ osname == "android" & speed == 0, speed := NaN ]
 
 save( all_data, file = "all_SNG.RData" )
-
-set.seed(1)
-unique_trips = all_data[ , unique( trj_id ) ]
-subsample = sample( unique_trips, 2800*2 )
-
-subdata = all_data[ trj_id %in% subsample ]
-
-save( subdata, file = "test_subset.RData" )

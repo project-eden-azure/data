@@ -1,0 +1,291 @@
+---
+title: "Computing trip distances/times from OSRM and Azure Maps"
+author: "Don Li"
+date: "08/06/2020"
+output: 
+  pdf_document: 
+    fig_height: 4
+    fig_width: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library( data.table )
+load( "../../dataset/OSRM.RData" )
+```
+
+# Computing trips and distances using OSRM and Azure Maps
+
+Given only the start and end points on a trajectory, we are asked to predict the estiamted time of arrival (ETA). Because the ETA is the sum of a waiting process, it is useful to get information from the underlying movement that comprises the trip.
+
+To do this, we will use existing tools, `Open Source Routing Machine` and `Azure Maps`. My interest here is using these tools to predict the path distance of the trip and the predicted time. Because path distance is not given as a model input, I will treat it as a missing value in the new data, and we will use model-based imputation to get those values.
+
+In other words:
+* For a new trip, we predict (impute) the path distance and get a rough estimate of speed
+* Use these imputed values in a model to predict the ETA for the trip
+
+# OSRM
+
+To get the OSRM data, I used the `osrmr` package in R. It actually had some stuff that bypassed `try` statements, which caused it to fail on an error regardless of what happened. I extracted the functions and put them together without that nonsense. You can source the function from `osrm_route_fx.R`.
+
+Let's look at how close OSRM was to our data. In the data frame below, we have summaries for each trip. `lat1` and `lng1` are the longitudes and latitudes for the start; `lat2` and `lng2` are the corresponding coordinates for the termination. `known_dist` is the Haversine path distance - this is computed from the distance between each of the GPS pings in the trip, and then summed over the trip. `known_time` is the known travel time in seconds. `OSMR_dist` is the path distance computed from OSRM - OSRM returns a path for us, and I just computed the distance between each of points and summed them over the trip. `OSMR_duration` is an estimate of the trip duration from OSMR.
+
+```{r}
+load( "../../dataset/OSRM.RData" )
+head( trip_summary )
+```
+
+First, assess the distances. The OSMR distance accounts for about 80% of the variability in the trip distance. Based on my a priori expectations, this is quite good, since I expected drivers to just do whatever they want.
+
+```{r}
+dist_model = lm( known_dist ~ OSMR_dist, data = trip_summary )
+summary_dist_model = summary( dist_model )
+summary_dist_model
+```
+
+In the figure below, we can see that there are a couple of trips that are far longer than what OSMR predicts based on the start and the end (below the 0-1 line). These are trips where they take a fat loop around the city.
+
+```{r fig.height = 4, fig.width= 4}
+col = rgb( 0, 0, 0, 0.25 )
+par( pty = "s" )
+trip_summary[ , {
+    plot( known_dist, OSMR_dist, pch = 16, col= col,
+        main = "OSMR vs known path distance", ylab = "OSMR distance", 
+        xlab = "Known distance" )
+    abline( 0, 1, col = "red" )
+} ]
+```
+
+We can see below, some of the trips with the most extreme deviation between the known path distance and the OSRM distance involve the driver taking some loops around the city. The red dot is the start and the blue dot is the end. The numbers are checkpoints that I labelled to get an indication of the sequence that the line points follow. Clearly, these are defective trips and we should consider removing them.
+
+```{r fig.height=10, fig.width=10}
+load( "../../dataset/all_SNG.RData" )
+long_trips = trip_summary[ abs(OSMR_dist - known_dist) > 40, trj_id ]
+all_data = all_data[ order( date_  ) ]
+long_long = all_data[ trj_id %in% long_trips ]
+par( mfrow = c(3,3), pty = "s" )
+
+for ( trip_id in long_trips[1:9] ){
+    temp_data = long_long[ trj_id == trip_id ]
+    N = nrow( temp_data )
+    checkpts = (1:N %% 200) == 0
+    plot( temp_data$rawlat, temp_data$rawlng, type = "l",
+        main = paste0( "Long trip: ", trip_id ),
+        xlab = "Latitude", ylab = "Longitude" )
+    text( temp_data$rawlat[ checkpts ], temp_data$rawlng[ checkpts ],
+        1:sum(checkpts) )
+    points( temp_data$rawlat[c(1,N)], temp_data$rawlng[c(1,N)], col = c("red","blue"), 
+        pch = 16, cex = 2 )
+}
+```
+
+We have some other trips with very big jumps in their locations. It is possible that these are just due to the data not being ordered properly, but I did explicitly reorder them by date in the chunk above, to prove there isn't a pre-processing error. If we look at some trips with large jumps:
+
+```{r}
+all_data[ trj_id == 81254, summary(speed) ]
+all_data[ trj_id == 62917, summary(speed) ]
+```
+
+We can see that some of their GPS speeds are negative. Speed can't be negative without time travel, so there is probably some sort of error there.
+
+## Removing negative speed trips
+Let's remove these invalid trips and see if the OSRM is more accurate.
+
+```{r}
+invalid_trips = all_data[ , any( speed < 0 ), by = "trj_id" ]
+valid_id = invalid_trips[, trj_id[!V1] ]
+invalid_trips[ , sum(V1) ]
+```
+
+Almost half the trips have some kind of error with negative GPS speed. Need to think hard about this problem.
+
+With the trips with defective pings removed, the OSRM routes explain 86% of the variability in the path distances. Seems good enough for what we want.
+
+```{r}
+valid_trips = trip_summary[ trj_id %in% valid_id ]
+dist_model_valid = lm( known_dist ~ OSMR_dist, data = valid_trips )
+summary( dist_model_valid )
+```
+
+```{r}
+valid_trips[ , {
+    plot( known_dist, OSMR_dist, pch = 16, col= col,
+        main = "OSMR vs known path distance", ylab = "OSMR distance", 
+        xlab = "Known distance" )
+    abline( 0, 1, col = "red" )
+} ]
+```
+
+## OSRM times
+
+OSRM predicted ETA accounts for 23% of the variability in the trip time. Not too bad for a single covariate. Note that this is only using the valid trips.
+
+```{r}
+time_model = lm( known_time ~ OSMR_duration, valid_trips )
+summary( time_model )
+```
+
+```{r}
+valid_trips[ , {
+    plot( known_dist, OSMR_dist, pch = 16, col= col,
+        main = "OSMR vs known ETA", ylab = "OSMR ETA", 
+        xlab = "Known ETA" )
+    abline( 0, 1, col = "red" )
+} ]
+```
+
+## Predicting time using OSMR data
+
+Our R-squared is now 26%, so seems okay.
+
+```{r}
+time_model2 = lm( known_time ~ OSMR_duration + OSMR_dist, valid_trips )
+summary( time_model2 )
+```
+
+```{r}
+col = rgb( 0, 0, 0, 0.25 )
+plot(
+    valid_trips$known_time, predict( time_model2 ),
+    xlab = "Observed time", ylab = "Predicted time",
+    main = "OSMR predictions", col = col,
+    pch = 16
+)
+abline( 0, 1, col = "red" )
+```
+
+# Azure maps
+
+Do all the same stuff, but with Azure maps instead.
+
+```{r}
+load( "../../dataset/Azure_part.RData" )
+head( trip_summary )
+```
+
+```{r}
+dist_model_Azure = lm( known_dist ~ azure_dist, data = trip_summary )
+summary_dist_model_Azure = summary( dist_model_Azure )
+summary_dist_model_Azure
+```
+
+The Azure maps distance is about the same, R-squared is `r round(summary_dist_model_Azure$adj.r.squared,3)`, which is about the same as for the OSRM `r round(summary_dist_model$adj.r.squared,3)`. 
+
+We notice a few overpredicted outliers that the OSRM did not have, but it's only 3 data points, so should be negligible.
+
+```{r fig.height = 4, fig.width= 4}
+col = rgb( 0, 0, 0, 0.25 )
+par( pty = "s" )
+trip_summary[ , {
+    plot( known_dist, azure_dist, pch = 16, col= col,
+        main = "Azure vs known path distance", ylab = "Azure distance", 
+        xlab = "Known distance" )
+    abline( 0, 1, col = "red" )
+} ]
+```
+
+## Azure times
+
+Azure predicted ETA accounts for 24% of the variability in the trip time. Quite similar to OSRM.
+
+```{r}
+valid_trips = trip_summary[ trj_id %in% valid_id ]
+time_model_Azure = lm( known_time ~ azure_dist, valid_trips )
+summary( time_model )
+```
+
+```{r}
+valid_trips[ , {
+    plot( known_dist, azure_dist, pch = 16, col= col,
+        main = "Azure vs known ETA", ylab = "Azure ETA", 
+        xlab = "Known ETA" )
+    abline( 0, 1, col = "red" )
+} ]
+```
+
+## Predicting time using Azure data
+
+Our R-squared is now 26%, similar to OSRM.
+
+```{r}
+time_model2_Azure = lm( known_time ~ azure_ETA + azure_dist, valid_trips )
+summary( time_model2 )
+```
+
+```{r}
+col = rgb( 0, 0, 0, 0.25 )
+plot(
+    valid_trips$known_time, predict( time_model2_Azure ),
+    xlab = "Observed time", ylab = "Predicted time",
+    main = "Azure predictions", col = col,
+    pch = 16
+)
+abline( 0, 1, col = "red" )
+```
+
+# Comparisons
+```{r}
+Azure_trip_summary = trip_summary
+load( "../../dataset/OSRM.RData" )
+# Perform a join
+trip_summary[ Azure_trip_summary, c("azure_dist", "azure_eta") :={
+    list( i.azure_dist, i.azure_ETA )
+}, on = "trj_id" ]
+```
+
+In the plot below, we see a good match between the Azure and OSRM routes. A couple of overpredictions the Azure maps though.
+
+```{r}
+trip_summary[ , {
+    plot( OSMR_dist, azure_dist, col = col, pch = 16,
+        main = "Azure vs OSRM distances",
+        xlab = "OSRM", ylab = "Azure" )
+    } ]
+```
+
+To see if having both distances will be useful, we will study the correlations in the residuals using a linear model. Since we see some spread around (0,0), it might be possible to combine the two distances into a better distance estimate.
+
+```{r}
+plot(
+    dist_model$residuals, dist_model_Azure$residuals,
+    col = col, pch = 16,
+    main = "Residuals; distance",
+    xlab = "OSRM", ylab = "Azure"
+)
+abline( v = 0, h = 0, col = "red" )
+```
+
+We can do the same thing with the travel time. Same conclusions as the distance; Azure has a bit of overprediction.
+
+```{r}
+trip_summary[ , {
+    plot( OSMR_duration, azure_eta, col = col, pch = 16,
+        main = "Azure vs OSRM ETAs",
+        xlab = "OSRM", ylab = "Azure" )
+    abline( 0, 1, col = "red" )
+    } ]
+```
+
+```{r}
+plot(
+    time_model$residuals, time_model_Azure$residuals,
+    col = col, pch = 16,
+    main = "Residuals; ETA",
+    xlab = "OSRM", ylab = "Azure"
+)
+abline( v = 0, h = 0, col = "red" )
+```
+
+
+# Conclusions
+
+Azure Maps and OSRM give very similar routing/ETAs.
+
+There are a lot of trips with negative speed that represent defective pathing data. Not sure what to do that this moment, or if it even matters.
+
+Next steps:
+* Use the Azure and OSRM routes to reconstruct path distances as covariates
+* Use the Azure and OSRM ETAs to predict ETA
