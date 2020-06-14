@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library( data.table )
 library( RgoogleMaps )
-load( "../../dataset/all_SNG.RData" )
+source( "G:/azure_hackathon/data/Don/utility.R" )
 ```
 
 # Purpose
@@ -28,14 +28,7 @@ I will use the second one because I don't know how to make an API work.
 Use k-means clustering (Hartigan-Wong) on the start and end points.
 
 ```{r eval = FALSE}
-load( "../../dataset/all_SNG.RData" )
-
-kmeans_map = function( data, centers, nstart, iter.max, trace = F ){
-    # Data needs a column of latitudes and longitudes
-    kmeans_result = kmeans( data, centers = centers, 
-        nstart = nstart, iter.max = iter.max, trace = trace )
-    kmeans_result
-}
+load( "G:/azure_hackathon/dataset/trip_summary2_loopytrim.RData" )
 
 predict_kmeans = function(object, newdata){
     centers = object$centers
@@ -45,10 +38,10 @@ predict_kmeans = function(object, newdata){
     max.col(-dist_mat)
 }
 
-start_end_data = all_data[ , 
+start_end_data = trip_summary[ , 
     list( 
-        lat1 = rawlat[1], lng1 = rawlng[1],
-        latN = rawlat[.N], lngN = rawlng[.N] 
+        lat1 = start_y, lng1 = start_x,
+        latN = end_x, lngN = end_y 
     ), by = "trj_id" ]
 
 kmeans_data = start_end_data[ , {
@@ -57,14 +50,15 @@ kmeans_data = start_end_data[ , {
         lngs = c(lng1, lngN )
     ) } ]
 
-kmeans_result = kmeans_map( kmeans_data, centers = 300, nstart = 1000, iter.max = 1e9 )
+kmeans_result = kmeans( kmeans_data, centers = 300, nstart = 1000, iter.max = 1e9 )
 
-save( kmeans_result, start_end_data, kmeans_data, file = "deriving_landmarks_kmeans.RData" )
+save( kmeans_result, start_end_data, kmeans_data, 
+    file = "G:/azure_hackathon/dataset/landmarks/landmarks_kmeans.RData" )
 ```
 
 Put these points on a map
 ```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
-load( "deriving_landmarks_kmeans.RData" )
+load( "G:/azure_hackathon/dataset/landmarks/landmarks_kmeans.RData" )
 
 SNG_coords = c(1.3521, 103.8198)
 SNG = GetMap( SNG_coords, zoom = 11 )
@@ -118,15 +112,17 @@ for ( i in 1:length(isolated_pts) ){
 new_keans_data = kmeans_data[ !isolated_pts, ]
 
 set.seed(312)
-kmeans_result2 = kmeans_map( new_keans_data, centers = 300, 
+kmeans_result2 = kmeans( new_keans_data, centers = 300, 
     nstart = 1000, iter.max = 1e9 )
-save( new_keans_data, kmeans_result2, file = "deriving_landmarks_kmeans2.RData" )
+save( new_keans_data, kmeans_result2, 
+    file = "G:/azure_hackathon/dataset/landmarks/landmarks_kmeans_outliers_rm.RData" )
 ```
 
 In my opinion, the clustering is nicer, especially around Jurong Island.
 
 ```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
-load( "deriving_landmarks_kmeans2.RData" )
+load(  "G:/azure_hackathon/dataset/landmarks/landmarks_kmeans_outliers_rm.RData" )
+
 PlotOnStaticMap( SNG )
 pt_col = rgb(red = 0, green = 0, blue = 0, alpha = 0.25)
 plot_pts[ , points( rescale_lng1, rescale_lat1, pch = 20, col = pt_col, cex = 0.5 ) ]
@@ -141,7 +137,7 @@ pt_col2 = rgb(red = 1, green = 0, blue = 0, alpha = 0.5)
 points( rescale_kmean_pts[,2], rescale_kmean_pts[,1], col = pt_col2, pch = 16, cex = 2 )
 ```
 
-Overlay the two clusters to see how they differ. Picture below. Red is the clustering with the outliers removed. Blue is the clustering with the outliers in (first clustering). Expect some randomness due to the k-means clustering. But, the outliers removed tends to make a lot of random stuff. For example, down the road from Pasir Gudang, the outerlier removed (red) makes one cluster, while the outlier kept (red) makes two.
+Overlay the two clusters to see how they differ. Picture below. Red is the clustering with the outliers removed. Blue is the clustering with the outliers in (first clustering). Expect some randomness due to the k-means clustering. But, the outliers removed tends to make a lot of random stuff. 
 
 ```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
 PlotOnStaticMap( SNG )
@@ -172,20 +168,25 @@ Using the results from K-means (outliers removed), we can link clusters together
 The results below show the linkage of the K-means centers using DBSCAN. In particular, look at the orange points at the airport (labeled "2"), also at some points in the city center. We can use this cluster information to classify trips based on start or end.
 
 ```{r eval = FALSE}
+load(  "G:/azure_hackathon/dataset/landmarks/landmarks_kmeans_outliers_rm.RData" )
+
 library( dbscan )
 set.seed(42323)
-dbscan_results = dbscan( kmeans_result2$centers, minPts = 1, eps = 0.0055 )
+dbscan_results = dbscan( kmeans_result2$centers, minPts = 1, eps = 0.01 )
 k2_centers = data.table(
     cbind( kmeans_result2$centers, size = kmeans_result2$size,
         cluster = dbscan_results$cluster )
 )
 k2_centers[ , total_size := sum(size), by = "cluster" ]
 big_clusters = k2_centers[ total_size > 500 ]
-save( dbscan_results, big_clusters, file = "deriving_landmarks_dbscan.RData" )
+
+save( dbscan_results, big_clusters,
+    file = "G:/azure_hackathon/dataset/landmarks/deriving_landmarks_dbscan.RData" )
 ```
 
 ```{r echo=FALSE, fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
-load( "deriving_landmarks_dbscan.RData" )
+load( "G:/azure_hackathon/dataset/landmarks/deriving_landmarks_dbscan.RData" )
+
 PlotOnStaticMap( SNG )
 pt_col = rgb(red = 0, green = 0, blue = 0, alpha = 1)
 colours = c("red", "blue", "green", "orange", "yellow", "brown", "purple",
@@ -228,7 +229,6 @@ for ( i in unique(d$cluster) ){
 ```
 
 
-
 # Proof of concept
 
 To show that this was not for nothing, we can look at trips to specific places.
@@ -236,7 +236,8 @@ To show that this was not for nothing, we can look at trips to specific places.
 We can see below that a trip to the airport does take longer than other trips.
 
 ```{r echo = FALSE, fig.height=3,fig.width=4}
-source( "utility.R" )
+source( "G:/azure_hackathon/data/Don/utility.R" )
+load( "G:/azure_hackathon/dataset/all_SNG_2_jump_adjusted.RData" )
 # Changi airport
 destination_coord = c(1.359167, 103.989441)
 

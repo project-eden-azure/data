@@ -1,0 +1,106 @@
+---
+title: "Trip summaries"
+author: "Don Li"
+date: "12/06/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library( data.table )
+```
+
+# Summarise trip trajectories
+
+List of covariates:
+
+* `crow_dist`: Distance as the crow flies (Haversine, km). Numeric.
+* `path_dist`: Path distance (Haversine, km). Numeric.
+* `path_dist2`: Path distance; longitude and latitude reversed (Haversine, km). Numeric.
+* `timediff`: Observed arrival time. Numeric.
+* `start_x`, `start_y`: Journey start longitudes and latitudes. Numeric.
+* `end_x`, `end_y`: Journey end longitudes and latitudes. Numeric.
+* `weekday`, `hour`: Day and hour that the trip started. Factor; Numeric.
+* `rush_hour`: Whether trip started during rush hour. Factor.
+* `mean_speed`, `var_speed`: Mean and variance of speed. Numeric.
+* `sampling_rate`, `sampling_rate_var`: GPS sampling rate. Numeric.
+
+Covariates to be joined later:
+
+* `azure_dist`: Path distance from Azure Maps.
+* `OSRM_dist`: Path distance from OSRM.
+* `trip_start`, `trip_end`: A factor with levels `generic`, `CX`, `CY`, etc. These are landmarks. `generic` catches all other points.
+
+```{r eval=FALSE}
+source( "G:/azure_hackathon/data/Don2/trip_summary.R" )
+source( "G:/azure_hackathon/data/Don2/distance_functions.R" )
+load( "G:/azure_hackathon/datasets2/data_processing/all_data3_speed.RData" )
+trip_summary = sumamrise_trips( all_data )
+```
+
+## Combine external distances/times from OSRM and Azure Maps
+
+Join Azure and OSRM distances to the summaries.
+
+```{r eval=FALSE}
+load( "G:/azure_hackathon/datasets2/external_paths/external_dist.RData" )
+
+trip_summary[ external_distance_summary,
+    c("azure_dist", "OSRM_dist") :={
+        list( i.azure_dist, i.OSMR_dist )
+    },
+    on = "trj_id"]
+
+save( trip_summary, 
+    file = "G:/azure_hackathon/datasets2/trip_summary/trip_summary1_externaldist.RData" )
+```
+
+## Loopy trips
+
+A trip where they just loop around the city. Obviously, we cannot predict the ETA of these kinds of trips using only the origin and the destination. There are some trips with very long path distances but short crow distances (top left).
+
+```{r fig.height=4, fig.width=4}
+load( "G:/azure_hackathon/datasets2/trip_summary/trip_summary1_externaldist.RData" )
+load( "G:/azure_hackathon/datasets2/data_processing/all_data3_speed.RData" )
+
+trip_summary[ , {
+    plot( crow_dist, path_dist, pch = 16 )
+} ]
+```
+
+```{r fig.height=4, fig.width=4}
+loopiest_trip = trip_summary[ which.max(path_dist - crow_dist) ]
+all_data[ trj_id == loopiest_trip$trj_id, {
+    plot( rawlat, rawlng, type = "l" )
+    } ]
+```
+
+I thought about taking them out. But these trips contain information about driver behaviour that deviates from the shortest path distance. So, I think it is best to keep them in.
+
+## Add landmark data
+
+Using the results from our clustering exercise, we have landmarks for `trip_start` and `trip_end`. `generic` is the factor level where the trip does not start/end from one of our identified landmarks.
+
+```{r eval = FALSE}
+load( "G:/azure_hackathon/datasets2/landmarks/deriving_landmarks_dbscan.RData" )
+add_landmarks( trip_summary, big_clusters )
+```
+
+## Do some log transformations
+
+```{r eval = FALSE}
+trip_summary[ , log_var_speed := log(var_speed) ]
+trip_summary[ , log_sampling_rate_var := log(sampling_rate_var) ]
+trip_summary[ , var_speed := NULL ]
+trip_summary[ , sampling_rate_var := NULL ]
+```
+
+# Save the file
+```{r eval = FALSE}
+save( trip_summary,
+    file = "G:/azure_hackathon/datasets2/trip_summary/trip_summary2_landmark.RData" )
+```
+

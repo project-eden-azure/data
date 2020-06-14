@@ -1,0 +1,690 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Deriving variables: Distance},
+            pdfauthor={Don Li},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+% grffile has become a legacy package: https://ctan.org/pkg/grffile
+\IfFileExists{grffile.sty}{%
+\usepackage{grffile}
+}{}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Deriving variables: Distance}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Don Li}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{05/06/2020}
+
+
+\begin{document}
+\maketitle
+
+\hypertarget{data-and-stuff}{%
+\section{Data and stuff}\label{data-and-stuff}}
+
+Load data. This contains test set, training set, and controls for 7-fold
+CV.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/model_subset/testing_subset.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{what-are-we-doing-here}{%
+\section{What are we doing here?}\label{what-are-we-doing-here}}
+
+In this document, we want to consider predicting path distance. You will
+note that in the model inputs, path distance is not a given input:
+
+\begin{itemize}
+\tightlist
+\item
+  latitude\_origin
+\item
+  longitude\_origin
+\item
+  latitude\_destination
+\item
+  longitude\_destination
+\item
+  hour\_of\_day
+\item
+  day\_of\_week
+\end{itemize}
+
+Although we can compute the distance as the crow flies (CF), we will
+also need the path distance. In our ETA model, we will use path
+distance, but we will treat it as a missing value. Therefore, we will
+need some model-based imputation to get some path distance information.
+
+Brief note: The landmarks variables made the models really bad. Probably
+because the factors force complete pooling of observations and fragments
+the data too much.
+
+A view of the variables before we start.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{head}\NormalTok{( training_set )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    trj_id timediff crow_dist path_dist path_dist2 weekday hour rush_hour
+## 1:  65500     1551  19.70113  23.97545   19.26083     Thu   21        No
+## 2:  23471     1254  14.40836  17.50876   13.90154     Fri    1        No
+## 3:  59010     1277  18.03334  26.49038   16.47832     Fri   22        No
+## 4:  79901     1436  20.52864  25.29980   19.74366     Wed   13      Work
+## 5:  45899      957  12.71138  15.95230   13.22123     Wed    9   Morning
+## 6:  37069     1397  17.07647  21.69056   17.18856     Sun   15      Work
+##     start_x  start_y    end_x    end_y sampling_rate sampling_rate_var
+## 1: 1.288671 103.8199 1.350731 103.9857      1.307757      46.893391252
+## 2: 1.273804 103.8428 1.344331 103.7343      1.009662       0.009576195
+## 3: 1.302475 103.8542 1.439841 103.7684      1.039902       0.432799338
+## 4: 1.445042 103.8289 1.342071 103.9820      1.124511       3.986836065
+## 5: 1.320543 103.7771 1.322991 103.8913      1.174233       0.746018299
+## 6: 1.343925 103.7069 1.297568 103.8532      1.348456       8.318074907
+##    mean_speed    var_speed azure_dist OSRM_dist trip_start trip_end
+## 1: 0.01720031 3.923431e-05     24.686  24.72538       C150     C110
+## 2: 0.01398457 5.699054e-05     17.218  16.82265       C150  generic
+## 3: 0.02105743 3.200899e-05     20.155  20.24935        C16  generic
+## 4: 0.01956870 2.988724e-05     26.011  26.08958        C17     C110
+## 5: 0.01927735 4.963859e-05     15.766  19.34844    generic  generic
+## 6: 0.01845827 3.413946e-05     21.588  21.65940    generic      C16
+\end{verbatim}
+
+\hypertarget{baseline}{%
+\section{Baseline}\label{baseline}}
+
+For our baselines, we will use the Azure and OSRM distances.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{azure_baseline =}\StringTok{ }\KeywordTok{sqrt}\NormalTok{( }\KeywordTok{mean}\NormalTok{( (test_set}\OperatorTok{$}\NormalTok{path_dist }\OperatorTok{-}\StringTok{ }\NormalTok{test_set}\OperatorTok{$}\NormalTok{azure_dist)}\OperatorTok{^}\DecValTok{2}\NormalTok{ ) )}
+\NormalTok{azure_baseline}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2.616091
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{osrm_baseline =}\StringTok{ }\KeywordTok{sqrt}\NormalTok{( }\KeywordTok{mean}\NormalTok{( (test_set}\OperatorTok{$}\NormalTok{path_dist }\OperatorTok{-}\StringTok{ }\NormalTok{test_set}\OperatorTok{$}\NormalTok{OSRM_dist)}\OperatorTok{^}\DecValTok{2}\NormalTok{ ) )}
+\NormalTok{osrm_baseline}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2.753985
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{vars_to_rm =}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"trj_id"}\NormalTok{, }\StringTok{"timediff"}\NormalTok{, }\StringTok{"path_dist2"}\NormalTok{, }\StringTok{"sampling_rate"}\NormalTok{,}
+    \StringTok{"sampling_rate_var"}\NormalTok{, }\StringTok{"mean_speed"}\NormalTok{, }\StringTok{"var_speed"}\NormalTok{ )}
+\NormalTok{test_set_all =}\StringTok{ }\KeywordTok{copy}\NormalTok{(test_set)}
+\NormalTok{training_set =}\StringTok{ }\KeywordTok{copy}\NormalTok{(training_set)}
+\NormalTok{test_set[ , }\KeywordTok{eval}\NormalTok{(vars_to_rm) }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\OtherTok{NULL}\NormalTok{ ]}
+\NormalTok{training_set[ , }\KeywordTok{eval}\NormalTok{(vars_to_rm) }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\OtherTok{NULL}\NormalTok{ ]}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{linear-regression}{%
+\section{Linear regression}\label{linear-regression}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{xvars =}\StringTok{ }\KeywordTok{setdiff}\NormalTok{( }\KeywordTok{names}\NormalTok{(training_set), }\StringTok{"path_dist"}\NormalTok{ )}
+\KeywordTok{par}\NormalTok{( }\DataTypeTok{mfrow =} \KeywordTok{c}\NormalTok{(}\DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{) )}
+\NormalTok{col =}\StringTok{ }\KeywordTok{rgb}\NormalTok{( }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\FloatTok{0.25}\NormalTok{ )}
+\ControlFlowTok{for}\NormalTok{ ( x }\ControlFlowTok{in}\NormalTok{ xvars )\{}
+    \KeywordTok{plot}\NormalTok{( training_set[[x]], training_set}\OperatorTok{$}\NormalTok{path_dist,}
+        \DataTypeTok{main =}\NormalTok{ x, }\DataTypeTok{col =}\NormalTok{ col, }\DataTypeTok{pch =} \DecValTok{16}\NormalTok{ )}
+    \KeywordTok{lines}\NormalTok{( }\KeywordTok{smooth.spline}\NormalTok{( training_set[[x]], training_set}\OperatorTok{$}\NormalTok{path_dist ),}
+        \DataTypeTok{col =} \StringTok{"red"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{deriving_distance_files/figure-latex/unnamed-chunk-5-1.pdf}
+\includegraphics{deriving_distance_files/figure-latex/unnamed-chunk-5-2.pdf}
+
+Linear regression. All second-order interactions, but some of the weird
+ones removed. Some quadratics for the start/end locations.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{model_formula_lm =}\StringTok{ }\NormalTok{path_dist }\OperatorTok{~}\StringTok{ }\NormalTok{.}\OperatorTok{*}\NormalTok{. }\OperatorTok{+}
+\StringTok{    }\KeywordTok{I}\NormalTok{(start_x}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{I}\NormalTok{(start_y}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{I}\NormalTok{(end_x}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{  }\KeywordTok{I}\NormalTok{(end_y}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}
+\StringTok{    }\KeywordTok{I}\NormalTok{(hour}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{I}\NormalTok{(hour}\OperatorTok{^}\DecValTok{3}\NormalTok{)  }\OperatorTok{-}
+\StringTok{    }\NormalTok{start_x}\OperatorTok{:}\NormalTok{end_x }\OperatorTok{-}\StringTok{ }\NormalTok{start_x}\OperatorTok{:}\NormalTok{start_y }\OperatorTok{-}\StringTok{ }\NormalTok{start_x}\OperatorTok{:}\NormalTok{end_y }\OperatorTok{-}
+\StringTok{    }\NormalTok{start_y}\OperatorTok{:}\NormalTok{end_x }\OperatorTok{-}\StringTok{ }\NormalTok{start_y}\OperatorTok{:}\NormalTok{start_y }\OperatorTok{-}\StringTok{ }\NormalTok{start_y}\OperatorTok{:}\NormalTok{end_y }\OperatorTok{-}
+\StringTok{    }\NormalTok{trip_start}\OperatorTok{*}\NormalTok{. }\OperatorTok{-}\StringTok{ }\NormalTok{trip_end}\OperatorTok{*}\NormalTok{.}
+
+\NormalTok{lm_ =}\StringTok{ }\KeywordTok{train}\NormalTok{( }\DataTypeTok{form =}\NormalTok{ model_formula_lm,}
+    \DataTypeTok{data =}\NormalTok{ training_set,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"lm"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control)}
+
+\NormalTok{lm_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( lm_}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{lm_pred =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( lm_}\OperatorTok{$}\NormalTok{pred )}
+\KeywordTok{setorder}\NormalTok{( lm_pred, rowIndex )}
+
+\KeywordTok{save}\NormalTok{( lm_, lm_results, lm_pred, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/lm.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/lm.RData"}\NormalTok{ )}
+\NormalTok{lm_results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    intercept     RMSE  Rsquared      MAE    RMSESD RsquaredSD     MAESD
+## 1:      TRUE 2.227735 0.8653754 1.171379 0.3524694 0.03559297 0.0680175
+\end{verbatim}
+
+CV error is 2.228. Better than out baselines.
+
+\hypertarget{elastic-net}{%
+\section{Elastic net}\label{elastic-net}}
+
+Elastic net.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{n_enet =}\StringTok{ }\DecValTok{50}
+\NormalTok{enet_tunegrid =}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}
+    \DataTypeTok{lambda =} \KeywordTok{rexp}\NormalTok{( n_enet, }\DecValTok{1}\OperatorTok{/}\FloatTok{0.0001}\NormalTok{ ),}
+    \DataTypeTok{fraction =} \KeywordTok{runif}\NormalTok{( n_enet, }\FloatTok{0.9}\NormalTok{, }\DecValTok{1}\NormalTok{ )}
+\NormalTok{)}
+\NormalTok{enet_ =}\StringTok{ }\KeywordTok{train}\NormalTok{( }\DataTypeTok{form =}\NormalTok{ model_formula_lm, }\DataTypeTok{data =}\NormalTok{ training_set,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"enet"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control,}
+    \DataTypeTok{tuneGrid =}\NormalTok{ enet_tunegrid, }\DataTypeTok{standardize =} \OtherTok{TRUE}\NormalTok{, }\DataTypeTok{intercept =} \OtherTok{FALSE}
+\NormalTok{    )}
+
+\NormalTok{enet_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( enet_}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{enet_pred =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( enet_}\OperatorTok{$}\NormalTok{pred )}
+\KeywordTok{setorder}\NormalTok{( enet_pred, rowIndex )}
+
+\KeywordTok{save}\NormalTok{( enet_, enet_results, enet_pred, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/enet.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+RMSE is around the same as the linear model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/enet.RData"}\NormalTok{ )}
+\NormalTok{enet_results[ }\KeywordTok{which.min}\NormalTok{(RMSE) ]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##          lambda  fraction     RMSE  Rsquared      MAE    RMSESD RsquaredSD
+## 1: 1.314809e-05 0.9121048 2.220201 0.8662129 1.159179 0.3597018 0.03639564
+##         MAESD
+## 1: 0.07006056
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{par}\NormalTok{( }\DataTypeTok{mfrow =} \KeywordTok{c}\NormalTok{(}\DecValTok{2}\NormalTok{, }\DecValTok{1}\NormalTok{ ) )}
+\NormalTok{enet_results[ , \{}
+    \KeywordTok{plot}\NormalTok{( fraction, RMSE, }\DataTypeTok{type =} \StringTok{"o"}\NormalTok{ )}
+\NormalTok{    nu_order =}\StringTok{ }\KeywordTok{order}\NormalTok{(lambda)}
+    \KeywordTok{plot}\NormalTok{( lambda[nu_order], RMSE[nu_order], }\DataTypeTok{type =} \StringTok{"o"}\NormalTok{ )}
+\NormalTok{\} ]}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{deriving_distance_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\hypertarget{partial-least-squares}{%
+\section{Partial least squares}\label{partial-least-squares}}
+
+PLS.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{full_X =}\StringTok{ }\KeywordTok{ncol}\NormalTok{( }\KeywordTok{model.matrix}\NormalTok{( model_formula_lm, training_set) )}
+\NormalTok{pls_tunegrid =}\StringTok{ }\KeywordTok{data.frame}\NormalTok{( }\DataTypeTok{ncomp =} \DecValTok{1}\OperatorTok{:}\NormalTok{full_X )}
+\NormalTok{pls_ =}\StringTok{ }\KeywordTok{train}\NormalTok{( }\DataTypeTok{form =}\NormalTok{ model_formula_lm, }\DataTypeTok{data =}\NormalTok{ training_set,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"pls"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control,}
+    \DataTypeTok{tuneGrid =}\NormalTok{ pls_tunegrid}
+\NormalTok{    )}
+
+\NormalTok{pls_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( pls_}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{pls_pred =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( pls_}\OperatorTok{$}\NormalTok{pred )}
+\KeywordTok{setorder}\NormalTok{( pls_pred, rowIndex )}
+
+\KeywordTok{save}\NormalTok{( pls_, pls_results, pls_pred, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/pls.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/pls.RData"}\NormalTok{ )}
+\NormalTok{pls_results[ }\KeywordTok{which.min}\NormalTok{(RMSE) ]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    ncomp     RMSE  Rsquared      MAE    RMSESD RsquaredSD      MAESD
+## 1:    43 2.217823 0.8663979 1.157298 0.3675327 0.03725146 0.07493254
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pls_results[ RMSE }\OperatorTok{<}\StringTok{ }\FloatTok{2.3}\NormalTok{, \{}
+    \KeywordTok{plot}\NormalTok{( ncomp, RMSE, }\DataTypeTok{type =} \StringTok{"o"}\NormalTok{ )}
+\NormalTok{\} ]}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{deriving_distance_files/figure-latex/unnamed-chunk-11-1.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\hypertarget{principal-components-regression}{%
+\section{Principal components
+regression}\label{principal-components-regression}}
+
+PCR.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{full_X =}\StringTok{ }\KeywordTok{ncol}\NormalTok{( }\KeywordTok{model.matrix}\NormalTok{( model_formula_lm, training_set) )}
+\NormalTok{pcr_tunegrid =}\StringTok{ }\KeywordTok{data.frame}\NormalTok{( }\DataTypeTok{ncomp =} \DecValTok{1}\OperatorTok{:}\NormalTok{full_X )}
+\NormalTok{pcr_ =}\StringTok{ }\KeywordTok{train}\NormalTok{( }\DataTypeTok{form =}\NormalTok{ model_formula_lm, }\DataTypeTok{data =}\NormalTok{ training_set,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"pcr"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control,}
+    \DataTypeTok{tuneGrid =}\NormalTok{ pcr_tunegrid}
+\NormalTok{    )}
+
+\NormalTok{pcr_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( pcr_}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{pcr_pred =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( pcr_}\OperatorTok{$}\NormalTok{pred )}
+\KeywordTok{setorder}\NormalTok{( pcr_pred, rowIndex )}
+
+\KeywordTok{save}\NormalTok{( pcr_, pcr_results, pcr_pred, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/pcr.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/pcr.RData"}\NormalTok{ )}
+\NormalTok{pcr_results[ }\KeywordTok{which.min}\NormalTok{(RMSE) ]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    ncomp     RMSE  Rsquared      MAE    RMSESD RsquaredSD      MAESD
+## 1:    65 2.217599 0.8664112 1.156403 0.3693347 0.03748396 0.07471209
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pcr_results[ RMSE }\OperatorTok{<}\StringTok{ }\FloatTok{2.3}\NormalTok{, \{}
+    \KeywordTok{plot}\NormalTok{( ncomp, RMSE, }\DataTypeTok{type =} \StringTok{"o"}\NormalTok{ )}
+\NormalTok{\} ]}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{deriving_distance_files/figure-latex/unnamed-chunk-13-1.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\hypertarget{knn}{%
+\section{KNN}\label{knn}}
+
+KNN.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{k_grid =}\StringTok{ }\KeywordTok{data.frame}\NormalTok{( }\DataTypeTok{k =} \DecValTok{5}\OperatorTok{:}\DecValTok{30}\NormalTok{ )}
+
+\NormalTok{knn_ =}\StringTok{ }\KeywordTok{train}\NormalTok{( }\DataTypeTok{form =}\NormalTok{ model_formula_lm, }\DataTypeTok{data =}\NormalTok{ training_set,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"knn"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control,}
+    \DataTypeTok{tuneGrid =}\NormalTok{ k_grid}
+\NormalTok{    )}
+
+\NormalTok{knn_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( knn_}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{knn_pred =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( knn_}\OperatorTok{$}\NormalTok{pred )}
+\KeywordTok{setorder}\NormalTok{( knn_pred, rowIndex )}
+
+\KeywordTok{save}\NormalTok{( knn_, knn_results, knn_pred,}
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/knn.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/knn.RData"}\NormalTok{ )}
+\NormalTok{knn_results[ }\KeywordTok{which.min}\NormalTok{(RMSE) ]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     k    RMSE  Rsquared      MAE    RMSESD RsquaredSD      MAESD
+## 1: 16 2.23356 0.8651132 1.129654 0.3492335 0.03454983 0.07882709
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knn_results[ , }\KeywordTok{plot}\NormalTok{( k, RMSE, }\DataTypeTok{type =} \StringTok{"o"}\NormalTok{ ) ]}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{deriving_distance_files/figure-latex/unnamed-chunk-15-1.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\hypertarget{cart}{%
+\section{CART}\label{cart}}
+
+Use an Exponential distribution for our random search.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cp_grid =}\StringTok{ }\KeywordTok{data.frame}\NormalTok{( }\DataTypeTok{cp =} \KeywordTok{rexp}\NormalTok{( }\DecValTok{100}\NormalTok{, }\DecValTok{1}\OperatorTok{/}\FloatTok{0.001}\NormalTok{ ) )}
+
+\NormalTok{rpart_ =}\StringTok{ }\KeywordTok{train}\NormalTok{( path_dist }\OperatorTok{~}\StringTok{ }\NormalTok{., }
+    \DataTypeTok{data =}\NormalTok{ training_set,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"rpart"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control,}
+    \DataTypeTok{tuneGrid =}\NormalTok{ cp_grid}
+\NormalTok{    )}
+
+\NormalTok{rpart_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( rpart_}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{rpart_pred =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( rpart_}\OperatorTok{$}\NormalTok{pred )}
+\KeywordTok{setorder}\NormalTok{( rpart_pred, rowIndex )}
+
+\KeywordTok{save}\NormalTok{( rpart_, rpart_results, rpart_pred,}
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/rpart.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/rpart.RData"}\NormalTok{ )}
+\NormalTok{rpart_results[ }\KeywordTok{which.min}\NormalTok{(RMSE) ]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##              cp     RMSE  Rsquared      MAE   RMSESD RsquaredSD      MAESD
+## 1: 0.0005422336 2.271404 0.8599859 1.175333 0.333959 0.03272627 0.08490925
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{( rpart_results}\OperatorTok{$}\NormalTok{cp, rpart_results}\OperatorTok{$}\NormalTok{RMSE, }\DataTypeTok{type =} \StringTok{"l"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{deriving_distance_files/figure-latex/unnamed-chunk-17-1.pdf}
+
+\hypertarget{gam-splines}{%
+\section{GAM splines}\label{gam-splines}}
+
+Generalised additive model using splines
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gam_grid =}\StringTok{ }\KeywordTok{expand.grid}\NormalTok{(}
+    \DataTypeTok{select =}\NormalTok{ F,}
+    \DataTypeTok{method =} \KeywordTok{c}\NormalTok{( }\StringTok{"GACV.Cp"}\NormalTok{, }\StringTok{"REML"}\NormalTok{, }\StringTok{"ML"}\NormalTok{ )}
+\NormalTok{)}
+
+\NormalTok{gam_ =}\StringTok{ }\KeywordTok{train}\NormalTok{( }
+\NormalTok{    path_dist }\OperatorTok{~}\StringTok{ }\NormalTok{. }\OperatorTok{+}
+\StringTok{            }\KeywordTok{I}\NormalTok{(start_x}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{I}\NormalTok{(start_y}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{I}\NormalTok{(end_x}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{  }\KeywordTok{I}\NormalTok{(end_y}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}
+\StringTok{    }\KeywordTok{I}\NormalTok{(hour}\OperatorTok{^}\DecValTok{2}\NormalTok{) }\OperatorTok{+}\StringTok{ }\KeywordTok{I}\NormalTok{(hour}\OperatorTok{^}\DecValTok{3}\NormalTok{)}
+\NormalTok{    , }\DataTypeTok{data =}\NormalTok{ training_set,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"gam"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control,}
+    \DataTypeTok{tuneGrid =}\NormalTok{ gam_grid}
+\NormalTok{)}
+
+\NormalTok{gam_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( gam_}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{gam_pred =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( gam_}\OperatorTok{$}\NormalTok{pred )}
+\KeywordTok{setorder}\NormalTok{( gam_pred, rowIndex )}
+
+\KeywordTok{save}\NormalTok{( gam_, gam_results, gam_pred,}
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/gam_spline.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/gam_spline.RData"}\NormalTok{ )}
+\NormalTok{gam_results[ }\KeywordTok{which.min}\NormalTok{(RMSE) ]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    select method     RMSE Rsquared      MAE    RMSESD RsquaredSD      MAESD
+## 1:  FALSE     ML 2.152747 0.873746 1.089102 0.3488632 0.03389655 0.07369293
+\end{verbatim}
+
+\hypertarget{stacking}{%
+\section{Stacking}\label{stacking}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{training_OOF =}\StringTok{ }\KeywordTok{data.table}\NormalTok{(}
+    \DataTypeTok{lm =}\NormalTok{ lm_pred}\OperatorTok{$}\NormalTok{pred,}
+    \DataTypeTok{enet =}\NormalTok{ enet_pred}\OperatorTok{$}\NormalTok{pred,}
+    \DataTypeTok{pls =}\NormalTok{ pls_pred}\OperatorTok{$}\NormalTok{pred,}
+    \DataTypeTok{pcr =}\NormalTok{ pcr_pred}\OperatorTok{$}\NormalTok{pred,}
+    \DataTypeTok{knn =}\NormalTok{ knn_pred}\OperatorTok{$}\NormalTok{pred, }
+    \DataTypeTok{rpart =}\NormalTok{ rpart_pred}\OperatorTok{$}\NormalTok{pred,}
+    \DataTypeTok{gam =}\NormalTok{ gam_pred}\OperatorTok{$}\NormalTok{pred,}
+    \DataTypeTok{path_dist =}\NormalTok{ training_set}\OperatorTok{$}\NormalTok{path_dist}
+    \CommentTok{# training_set}
+\NormalTok{)}
+
+\NormalTok{test_OOF =}\StringTok{ }\KeywordTok{data.table}\NormalTok{(}
+    \DataTypeTok{lm =} \KeywordTok{predict}\NormalTok{( lm_, test_set ),}
+    \DataTypeTok{enet =} \KeywordTok{predict}\NormalTok{( enet_, test_set ),}
+    \DataTypeTok{pls =} \KeywordTok{predict}\NormalTok{( pls_, test_set ),}
+    \DataTypeTok{pcr =} \KeywordTok{predict}\NormalTok{( pcr_, test_set ),}
+    \DataTypeTok{knn =} \KeywordTok{predict}\NormalTok{( knn_, test_set ),}
+    \DataTypeTok{rpart =} \KeywordTok{predict}\NormalTok{( rpart_, test_set ),}
+    \DataTypeTok{gam =} \KeywordTok{predict}\NormalTok{( gam_, test_set ),}
+    \DataTypeTok{path_dist =}\NormalTok{ test_set}\OperatorTok{$}\NormalTok{path_dist}
+    \CommentTok{# test_set}
+\NormalTok{)}
+
+\NormalTok{stacking_model_formula =}\StringTok{ }\NormalTok{path_dist }\OperatorTok{~}\StringTok{ }\NormalTok{.}
+
+\NormalTok{stacked_tunegrid =}\StringTok{ }\KeywordTok{data.frame}\NormalTok{( }\DataTypeTok{ncomp =} \DecValTok{1}\OperatorTok{:}\NormalTok{(}\KeywordTok{ncol}\NormalTok{(training_OOF)}\OperatorTok{-}\DecValTok{1}\NormalTok{) )}
+\NormalTok{stacking =}\StringTok{ }\KeywordTok{train}\NormalTok{( stacking_model_formula, }\DataTypeTok{data =}\NormalTok{ training_OOF,}
+    \DataTypeTok{metric =} \StringTok{"RMSE"}\NormalTok{, }\DataTypeTok{method =} \StringTok{"pcr"}\NormalTok{, }\DataTypeTok{trControl =}\NormalTok{ train_control,}
+    \DataTypeTok{tuneGrid =}\NormalTok{ stacked_tunegrid}
+\NormalTok{    )}
+
+\NormalTok{stacking_results =}\StringTok{ }\KeywordTok{data.table}\NormalTok{( stacking}\OperatorTok{$}\NormalTok{results )}
+\NormalTok{stack_pred_OOF =}\StringTok{ }\KeywordTok{predict}\NormalTok{( stacking, test_OOF )}
+
+\KeywordTok{save}\NormalTok{( stacking_results, stack_pred_OOF, test_OOF,}
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/expo/stack.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/expo/stack.RData"}\NormalTok{ )}
+
+
+\NormalTok{stacked_rmse =}\StringTok{ }\KeywordTok{sqrt}\NormalTok{( }\KeywordTok{mean}\NormalTok{( ( stack_pred_OOF }\OperatorTok{-}\StringTok{ }\NormalTok{test_OOF}\OperatorTok{$}\NormalTok{path_dist )}\OperatorTok{^}\DecValTok{2}\NormalTok{ ) )}
+
+\NormalTok{all_rmse =}\StringTok{ }\KeywordTok{rbind}\NormalTok{(}
+    \KeywordTok{as.matrix}\NormalTok{(}\KeywordTok{sqrt}\NormalTok{( }\KeywordTok{colMeans}\NormalTok{( ( test_OOF }\OperatorTok{-}\StringTok{ }\NormalTok{test_OOF}\OperatorTok{$}\NormalTok{path_dist )}\OperatorTok{^}\DecValTok{2}\NormalTok{ ) )),}
+    \DataTypeTok{stack =}\NormalTok{ stacked_rmse}
+\NormalTok{)}
+
+\NormalTok{(all_rmse[ }\KeywordTok{order}\NormalTok{(all_rmse), ][}\OperatorTok{-}\DecValTok{1}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      gam    stack      pcr      pls      knn     enet       lm    rpart 
+## 2.280753 2.305106 2.387824 2.391231 2.398938 2.403394 2.410252 2.514303
+\end{verbatim}
+
+Stacking does a pretty good job. But GAMs are pretty good, but I think
+this is just a strange sample. I tried with other samples in the dataset
+and the stack was better for them.
+
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
+
+Stack a bunch of models for imputing distance.
+
+Recall that I have a bad distance where I swap the longitude and the
+latitudes in the calculation. I don't know why, but it ends up being
+quite good in the model. I suspect it is like a PCA kind of effect.
+
+To impute the proper Haversine, I will impute the terrible Haversine
+first:
+
+\begin{itemize}
+\tightlist
+\item
+  Impute the Haversine2 distance (longs and lats swapped).
+\item
+  Use the Haversine2 with the other variables to impute the Haversine
+  (longs and lats right way).
+\end{itemize}
+
+
+\end{document}

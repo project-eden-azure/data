@@ -1,0 +1,181 @@
+---
+title: "Model work"
+author: "Don Li"
+date: "12/06/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library( data.table )
+library( caret )
+library( mgcv )
+library( pls )
+```
+
+
+```{r eval = FALSE}
+load( "G:/azure_hackathon/datasets2/trip_summary/trip_summary2_landmark.RData" )
+
+set.seed(1)
+data_subset = trip_summary[ sample.int( .N, 7000 ) ]
+
+set.seed(99)
+inTrain = createDataPartition( data_subset$path_dist, p = 0.75 )
+
+training_set = data_subset[ inTrain$Resample1 ]
+test_set = data_subset[ -inTrain$Resample1 ]
+
+cv_folds = 7
+cv_fold_id = createFolds( training_set$path_dist, k = cv_folds, returnTrain = T )
+train_control = trainControl( 
+    method = "cv", number = cv_folds,
+    verboseIter = TRUE, 
+    search = "grid", 
+    index = cv_fold_id, savePredictions = "final",
+    returnData = FALSE
+)
+
+save( inTrain, training_set, test_set, train_control, data_subset,
+    file = "G:/azure_hackathon/datasets2/model_subset/testing_subset.RData" )
+```
+
+# Make some historical measures
+```{r eval = FALSE}
+historicals = training_set[ , {
+    list( 
+        historic_timediff = mean( timediff ),
+        historic_crow_dist = mean( crow_dist ),
+        historic_path_dist = mean( path_dist ),
+        historic_sampling_rate = mean( sampling_rate ),
+        historic_mean_speed = mean_speed,
+        historic_log_var_speed = mean( log_var_speed )
+    )
+}, by = c("weekday", "hour") ]
+
+historical_vars = colnames( historicals )[
+    grepl( "historic", colnames( historicals ) )
+    ]
+training_set[ historicals, eval(historical_vars) := {
+    list( i.historic_timediff,
+        i.historic_crow_dist,
+        i.historic_path_dist,
+        i.historic_sampling_rate,
+        i.historic_mean_speed,
+        i.historic_log_var_speed
+    )
+}, on = c("weekday", "hour") ]
+test_set[ historicals, eval(historical_vars) := {
+    list( i.historic_timediff,
+        i.historic_crow_dist,
+        i.historic_path_dist,
+        i.historic_sampling_rate,
+        i.historic_mean_speed,
+        i.historic_log_var_speed
+    )
+}, on = c("weekday", "hour") ]
+
+save( historicals,
+    file = "G:/azure_hackathon/datasets2/model_subset/testing_historicals.RData"
+)
+```
+
+# Impute path_dist and path_dist2
+
+```{r eval = FALSE}
+load( "G:/azure_hackathon/datasets2/model_subset/testing_subset.RData" )
+
+path_dist = training_set[ , path_dist ]
+vars_to_rm = c("trj_id", "timediff", "path_dist", "sampling_rate",
+    "sampling_rate_var", "log_sampling_rate_var", "mean_speed", 
+    "var_speed", "log_var_speed" )
+
+training_set[ , eval(vars_to_rm) := NULL ]
+
+# Impute path distance 2
+impute_path_dist2 = train_dist_impute_model( 2, train_control, training_set )
+imputed_path_dist2 = dist_impute_model_predict( impute_path_dist2, training_set )
+training_set[ , path_dist2_impute := imputed_path_dist2 ]
+training_set[ , path_dist2 := NULL ]
+
+# Impute path distance
+training_set[ , path_dist := path_dist ]
+impute_path_dist = train_dist_impute_model( 1, train_control, training_set )
+
+# Join to dataframe
+data_subset[ , path_dist2 := NULL ]
+imputed_path_dist2_all = dist_impute_model_predict( impute_path_dist2, data_subset )
+data_subset[ , path_dist2_impute := imputed_path_dist2_all ]
+
+data_subset[ , path_dist := NULL ]
+imputed_path_dist_all = dist_impute_model_predict( impute_path_dist, data_subset )
+data_subset[ , path_dist_impute := imputed_path_dist_all ]
+
+save( inTrain, training_set, test_set, train_control, data_subset,
+    impute_path_dist2, impute_path_dist,
+    file = "G:/azure_hackathon/datasets2/model_subset/testing_subset1_imputedist.RData" )
+```
+
+# Impute speed and variance
+
+I remembered to attach the historical data this time.
+```{r eval = FALSE}
+source( "G:/azure_hackathon/data/Don2/impute_speed.R" )
+load( "G:/azure_hackathon/datasets2/model_subset/testing_subset1_imputedist.RData" )
+load( "G:/azure_hackathon/datasets2/model_subset/testing_historicals.RData" )
+historical_vars = colnames( historicals )[
+    grepl( "historic", colnames( historicals ) )
+    ]
+training_set[ historicals, eval(historical_vars) := {
+    list( i.historic_timediff,
+        i.historic_crow_dist,
+        i.historic_path_dist,
+        i.historic_sampling_rate,
+        i.historic_mean_speed,
+        i.historic_log_var_speed
+    )
+}, on = c("weekday", "hour") ]
+test_set[ historicals, eval(historical_vars) := {
+    list( i.historic_timediff,
+        i.historic_crow_dist,
+        i.historic_path_dist,
+        i.historic_sampling_rate,
+        i.historic_mean_speed,
+        i.historic_log_var_speed
+    )
+}, on = c("weekday", "hour") ]
+data_subset[ historicals, eval(historical_vars) := {
+    list( i.historic_timediff,
+        i.historic_crow_dist,
+        i.historic_path_dist,
+        i.historic_sampling_rate,
+        i.historic_mean_speed,
+        i.historic_log_var_speed
+    )
+}, on = c("weekday", "hour") ]
+
+
+vars_to_rm = c("trj_id", "timediff", "sampling_rate",
+    "sampling_rate_var", "var_speed", "log_sampling_rate_var", "log_var_speed" )
+
+training_set[ , eval(vars_to_rm) := NULL ]
+
+# Impute speed
+impute_speed = train_speed_impute_model( train_control, training_set )
+inputed_speed = speed_impute_model_predict( impute_speed, data_subset )
+data_subset[ , speed_impute := inputed_speed ]
+
+save( inTrain, training_set, test_set, train_control, data_subset,
+    impute_path_dist2, impute_path_dist, impute_speed,
+    file = "G:/azure_hackathon/datasets2/model_subset/testing_subset2_imputespeed.RData" )
+```
+
+
+
+
+
+
+

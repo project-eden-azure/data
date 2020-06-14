@@ -1,0 +1,420 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={deriving\_landmarks},
+            pdfauthor={Don Li},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+% grffile has become a legacy package: https://ctan.org/pkg/grffile
+\IfFileExists{grffile.sty}{%
+\usepackage{grffile}
+}{}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{deriving\_landmarks}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Don Li}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{06/06/2020}
+
+
+\begin{document}
+\maketitle
+
+\hypertarget{purpose}{%
+\section{Purpose}\label{purpose}}
+
+Derive landmark locations and use this to group the data better.
+
+Approaches:
+
+\begin{itemize}
+\tightlist
+\item
+  Use Google Places API or something like that to determine what
+  locations people are going to
+\item
+  Use statistics
+\end{itemize}
+
+I will use the second one because I don't know how to make an API work.
+
+\hypertarget{data-and-stuff}{%
+\section{Data and stuff}\label{data-and-stuff}}
+
+\hypertarget{k-means}{%
+\subsection{K-means}\label{k-means}}
+
+Use k-means clustering (Hartigan-Wong) on the start and end points.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/dataset/trip_summary2_loopytrim.RData"}\NormalTok{ )}
+
+\NormalTok{predict_kmeans =}\StringTok{ }\ControlFlowTok{function}\NormalTok{(object, newdata)\{}
+\NormalTok{    centers =}\StringTok{ }\NormalTok{object}\OperatorTok{$}\NormalTok{centers}
+\NormalTok{    n_centers =}\StringTok{ }\KeywordTok{nrow}\NormalTok{(centers)}
+\NormalTok{    dist_mat =}\StringTok{ }\KeywordTok{as.matrix}\NormalTok{(}\KeywordTok{dist}\NormalTok{(}\KeywordTok{rbind}\NormalTok{(centers, newdata)))}
+\NormalTok{    dist_mat =}\StringTok{ }\NormalTok{dist_mat[}\OperatorTok{-}\KeywordTok{seq}\NormalTok{(n_centers), }\KeywordTok{seq}\NormalTok{(n_centers)]}
+    \KeywordTok{max.col}\NormalTok{(}\OperatorTok{-}\NormalTok{dist_mat)}
+\NormalTok{\}}
+
+\NormalTok{start_end_data =}\StringTok{ }\NormalTok{trip_summary[ , }
+    \KeywordTok{list}\NormalTok{( }
+        \DataTypeTok{lat1 =}\NormalTok{ start_y, }\DataTypeTok{lng1 =}\NormalTok{ start_x,}
+        \DataTypeTok{latN =}\NormalTok{ end_x, }\DataTypeTok{lngN =}\NormalTok{ end_y }
+\NormalTok{    ), by =}\StringTok{ "trj_id"}\NormalTok{ ]}
+
+\NormalTok{kmeans_data =}\StringTok{ }\NormalTok{start_end_data[ , \{}
+    \KeywordTok{cbind}\NormalTok{( }
+        \DataTypeTok{lats =} \KeywordTok{c}\NormalTok{( lat1, latN), }
+        \DataTypeTok{lngs =} \KeywordTok{c}\NormalTok{(lng1, lngN )}
+\NormalTok{    ) \} ]}
+
+\NormalTok{kmeans_result =}\StringTok{ }\KeywordTok{kmeans}\NormalTok{( kmeans_data, }\DataTypeTok{centers =} \DecValTok{300}\NormalTok{, }\DataTypeTok{nstart =} \DecValTok{1000}\NormalTok{, }\DataTypeTok{iter.max =} \FloatTok{1e9}\NormalTok{ )}
+
+\KeywordTok{save}\NormalTok{( kmeans_result, start_end_data, kmeans_data, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/dataset/landmarks/landmarks_kmeans.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+Put these points on a map
+
+\begin{verbatim}
+## sleptTotal= 0
+\end{verbatim}
+
+\begin{verbatim}
+## [1] "Caution: map type is OpenStreetMap. Until we find the correct projection algorithm, we treat lat/lon like planar coordinates and set TrueProj = FALSE."
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\hypertarget{k-means-with-outliers-removed}{%
+\subsection{K-means with outliers
+removed}\label{k-means-with-outliers-removed}}
+
+I want to automatically detect high transit destinations. In order to do
+this, I will filter the points that have no neighbours within 500m.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{min_dist_km =}\StringTok{ }\FloatTok{0.5}
+\NormalTok{isolated_pts =}\StringTok{ }\KeywordTok{rep}\NormalTok{( F, }\KeywordTok{nrow}\NormalTok{( kmeans_data ) )}
+\ControlFlowTok{for}\NormalTok{ ( i }\ControlFlowTok{in} \DecValTok{1}\OperatorTok{:}\KeywordTok{length}\NormalTok{(isolated_pts) )\{}
+    \ControlFlowTok{if}\NormalTok{ ( i }\OperatorTok{%%}\StringTok{ }\DecValTok{100} \OperatorTok{==}\StringTok{ }\DecValTok{0}\NormalTok{ ) }\KeywordTok{print}\NormalTok{( i )}
+\NormalTok{    all_haversines =}\StringTok{ }\KeywordTok{haversine2}\NormalTok{( kmeans_data[i,,}\DataTypeTok{drop =}\NormalTok{ F], kmeans_data )}
+\NormalTok{    isolated =}\StringTok{ }\NormalTok{(}\KeywordTok{sum}\NormalTok{(all_haversines }\OperatorTok{<}\StringTok{ }\NormalTok{min_dist_km) }\OperatorTok{-}\StringTok{ }\DecValTok{1}\NormalTok{ ) }\OperatorTok{==}\StringTok{ }\DecValTok{0}
+    \ControlFlowTok{if}\NormalTok{ ( isolated )\{}
+\NormalTok{        isolated_pts[i] =}\StringTok{ }\NormalTok{T}
+\NormalTok{    \}}
+\NormalTok{\}}
+
+\NormalTok{new_keans_data =}\StringTok{ }\NormalTok{kmeans_data[ }\OperatorTok{!}\NormalTok{isolated_pts, ]}
+
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{312}\NormalTok{)}
+\NormalTok{kmeans_result2 =}\StringTok{ }\KeywordTok{kmeans}\NormalTok{( new_keans_data, }\DataTypeTok{centers =} \DecValTok{300}\NormalTok{, }
+    \DataTypeTok{nstart =} \DecValTok{1000}\NormalTok{, }\DataTypeTok{iter.max =} \FloatTok{1e9}\NormalTok{ )}
+\KeywordTok{save}\NormalTok{( new_keans_data, kmeans_result2, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/dataset/landmarks/landmarks_kmeans_outliers_rm.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+In my opinion, the clustering is nicer, especially around Jurong Island.
+
+\begin{verbatim}
+## [1] "Caution: map type is OpenStreetMap. Until we find the correct projection algorithm, we treat lat/lon like planar coordinates and set TrueProj = FALSE."
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+Overlay the two clusters to see how they differ. Picture below. Red is
+the clustering with the outliers removed. Blue is the clustering with
+the outliers in (first clustering). Expect some randomness due to the
+k-means clustering. But, the outliers removed tends to make a lot of
+random stuff.
+
+\begin{verbatim}
+## [1] "Caution: map type is OpenStreetMap. Until we find the correct projection algorithm, we treat lat/lon like planar coordinates and set TrueProj = FALSE."
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\hypertarget{stacking-clustering-algorithms}{%
+\section{Stacking clustering
+algorithms}\label{stacking-clustering-algorithms}}
+
+Using the results from K-means (outliers removed), we can link clusters
+together using DBSCAN. This is useful for points like the airport, where
+there is a whole collection of points in a row.
+
+The results below show the linkage of the K-means centers using DBSCAN.
+In particular, look at the orange points at the airport (labeled ``2''),
+also at some points in the city center. We can use this cluster
+information to classify trips based on start or end.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{(  }\StringTok{"G:/azure_hackathon/dataset/landmarks/landmarks_kmeans_outliers_rm.RData"}\NormalTok{ )}
+
+\KeywordTok{library}\NormalTok{( dbscan )}
+\KeywordTok{set.seed}\NormalTok{(}\DecValTok{42323}\NormalTok{)}
+\NormalTok{dbscan_results =}\StringTok{ }\KeywordTok{dbscan}\NormalTok{( kmeans_result2}\OperatorTok{$}\NormalTok{centers, }\DataTypeTok{minPts =} \DecValTok{1}\NormalTok{, }\DataTypeTok{eps =} \FloatTok{0.01}\NormalTok{ )}
+\NormalTok{k2_centers =}\StringTok{ }\KeywordTok{data.table}\NormalTok{(}
+    \KeywordTok{cbind}\NormalTok{( kmeans_result2}\OperatorTok{$}\NormalTok{centers, }\DataTypeTok{size =}\NormalTok{ kmeans_result2}\OperatorTok{$}\NormalTok{size,}
+        \DataTypeTok{cluster =}\NormalTok{ dbscan_results}\OperatorTok{$}\NormalTok{cluster )}
+\NormalTok{)}
+\NormalTok{k2_centers[ , total_size }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\KeywordTok{sum}\NormalTok{(size), by =}\StringTok{ "cluster"}\NormalTok{ ]}
+\NormalTok{big_clusters =}\StringTok{ }\NormalTok{k2_centers[ total_size }\OperatorTok{>}\StringTok{ }\DecValTok{500}\NormalTok{ ]}
+
+\KeywordTok{save}\NormalTok{( dbscan_results, big_clusters,}
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/dataset/landmarks/deriving_landmarks_dbscan.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "Caution: map type is OpenStreetMap. Until we find the correct projection algorithm, we treat lat/lon like planar coordinates and set TrueProj = FALSE."
+\end{verbatim}
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+Count up the size of each cluster from K-means, summed over the cluster
+membership from DBSCAN and plot only the clusters with more than 100
+total.
+
+\begin{verbatim}
+## [1] "Caution: map type is OpenStreetMap. Until we find the correct projection algorithm, we treat lat/lon like planar coordinates and set TrueProj = FALSE."
+\end{verbatim}
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\hypertarget{proof-of-concept}{%
+\section{Proof of concept}\label{proof-of-concept}}
+
+To show that this was not for nothing, we can look at trips to specific
+places.
+
+We can see below that a trip to the airport does take longer than other
+trips.
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+Similarly, trips to the airport also take longer.
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+We can do things more algorithmically:
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-11-1.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\includegraphics{deriving_landmarks_files/figure-latex/unnamed-chunk-11-2.pdf}
+
+\begin{verbatim}
+## NULL
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = tdiff2 ~ relevel(trip_Factor, ref = "generic") + 
+##     relevel(trip_Factor2, ref = "generic"), data = summary_data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+##  -614.0  -213.9   -66.5   123.0 15140.0 
+## 
+## Coefficients:
+##                                            Estimate Std. Error t value Pr(>|t|)
+## (Intercept)                                   5.023      3.283   1.530 0.125998
+## relevel(trip_Factor, ref = "generic")C110    25.933      7.558   3.431 0.000602
+## relevel(trip_Factor, ref = "generic")C150   -17.605      8.718  -2.019 0.043458
+## relevel(trip_Factor, ref = "generic")C16     -8.028      9.566  -0.839 0.401348
+## relevel(trip_Factor, ref = "generic")C17    -12.774      8.821  -1.448 0.147595
+## relevel(trip_Factor, ref = "generic")C41    -21.074      8.193  -2.572 0.010110
+## relevel(trip_Factor, ref = "generic")C43   -129.799     10.259 -12.653  < 2e-16
+## relevel(trip_Factor, ref = "generic")C9     -42.999      9.284  -4.631 3.65e-06
+## relevel(trip_Factor2, ref = "generic")C110   64.916      7.642   8.494  < 2e-16
+## relevel(trip_Factor2, ref = "generic")C150  -15.730      8.706  -1.807 0.070810
+## relevel(trip_Factor2, ref = "generic")C16   -10.252      9.947  -1.031 0.302698
+## relevel(trip_Factor2, ref = "generic")C17     1.889      8.948   0.211 0.832819
+## relevel(trip_Factor2, ref = "generic")C41    48.880      8.736   5.595 2.23e-08
+## relevel(trip_Factor2, ref = "generic")C43  -113.518      8.143 -13.941  < 2e-16
+## relevel(trip_Factor2, ref = "generic")C9    -51.838      9.231  -5.616 1.97e-08
+##                                               
+## (Intercept)                                   
+## relevel(trip_Factor, ref = "generic")C110  ***
+## relevel(trip_Factor, ref = "generic")C150  *  
+## relevel(trip_Factor, ref = "generic")C16      
+## relevel(trip_Factor, ref = "generic")C17      
+## relevel(trip_Factor, ref = "generic")C41   *  
+## relevel(trip_Factor, ref = "generic")C43   ***
+## relevel(trip_Factor, ref = "generic")C9    ***
+## relevel(trip_Factor2, ref = "generic")C110 ***
+## relevel(trip_Factor2, ref = "generic")C150 .  
+## relevel(trip_Factor2, ref = "generic")C16     
+## relevel(trip_Factor2, ref = "generic")C17     
+## relevel(trip_Factor2, ref = "generic")C41  ***
+## relevel(trip_Factor2, ref = "generic")C43  ***
+## relevel(trip_Factor2, ref = "generic")C9   ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 340.7 on 27985 degrees of freedom
+## Multiple R-squared:  0.01803,    Adjusted R-squared:  0.01754 
+## F-statistic: 36.71 on 14 and 27985 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
+
+We can see that classifying trips could be a useful covariate.
+
+
+\end{document}

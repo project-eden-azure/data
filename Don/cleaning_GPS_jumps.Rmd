@@ -90,7 +90,7 @@ two_window_threshold = function( x, threshold ){
 test_data[ , c( "rawlat", "rawlng" ) := {
     missing_dist = which( two_window_threshold( H_dist, 5 ) )
     for ( missing in missing_dist ){
-        neighbours = missing - 5:5
+        neighbours = missing + -5:5
         around_lat = rawlat[ neighbours ]
         around_lng = rawlng[ neighbours ]
         interpolate_lat = mean( around_lat, na.rm = T )
@@ -129,7 +129,7 @@ test_data[ , sum(H_dist) ]
 all_data[ , c( "rawlat", "rawlng" ) := {
     missing_dist = which( two_window_threshold( H_dist, 5 ) )
     for ( missing in missing_dist ){
-        neighbours = missing - 5:5
+        neighbours = missing + -5:5
         around_lat = rawlat[ neighbours ]
         around_lng = rawlng[ neighbours ]
         interpolate_lat = mean( around_lat, na.rm = T )
@@ -216,7 +216,7 @@ Set new threshold for jumps to 3.
 all_data[ , c( "rawlat", "rawlng" ) := {
     missing_dist = which( two_window_threshold( H_dist, 3 ) )
     for ( missing in missing_dist ){
-        neighbours = missing - 5:5
+        neighbours = missing + -5:5
         around_lat = rawlat[ neighbours ]
         around_lng = rawlng[ neighbours ]
         interpolate_lat = mean( around_lat, na.rm = T )
@@ -256,7 +256,7 @@ for ( trj in bad_trips[1:9 ] ){
 all_data[ , c( "rawlat", "rawlng" ) := {
     missing_dist = which( two_window_threshold( H_dist, 2 ) )
     for ( missing in missing_dist ){
-        neighbours = missing - 5:5
+        neighbours = missing + -5:5
         around_lat = rawlat[ neighbours ]
         around_lng = rawlng[ neighbours ]
         interpolate_lat = mean( around_lat, na.rm = T )

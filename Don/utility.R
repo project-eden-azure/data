@@ -17,49 +17,99 @@ haversine = function( lat, lng, radius = 6378.137 ){
     d
 }
 
-update_covariates_generic = function( dataset ){
-    dataset[ , H_dist := {
-        h_dist = haversine( rawlat, rawlng )
-        c( 0, h_dist  )
+sumamrise_trips = function( dataset ){
+    trip_summary = dataset[ , {
+        start_end = c(1,.N)
+        
+        # Compute the distances
+        crow_dist = haversine( rawlat[start_end], rawlng[start_end] )
+        path_dist = sum(H_dist)
+        path_dist2 = sum(H_dist2)
+        
+        # Actual arrival times
+        timediff = difftime( date_[.N], date_[1], units = "s" )
+        timediff = as.numeric(timediff)
+    
+        # Start/end coordinates
+        start_x = rawlat[1]
+        start_y = rawlng[1]
+        end_x = rawlat[.N]
+        end_y = rawlng[.N]
+        
+        # Time that the trip started
+        weekday_ = weekday[1]
+        hour_ = hour[1]
+        rush_hour_ = rush_hour[1]
+        
+        # Number of GPS samples
+        N = .N
+        
+        # Some speed statistics
+        mean_speed = mean( speed, na.rm = T )
+        var_speed = var( speed, na.rm = T )
+        sampling_rate = mean( time_diff[-1], na.rm = T )
+        sampling_rate_var = var( time_diff[-1], na.rm = T )
+        
+        list( 
+            timediff = timediff,
+            crow_dist = crow_dist, path_dist = path_dist, path_dist2 = path_dist2,
+            weekday = weekday_, hour = hour_, rush_hour = rush_hour_,
+            start_x = start_x, start_y = start_y, 
+            end_x = end_x, end_y = end_y, 
+            N = N, sampling_rate = sampling_rate, sampling_rate_var = sampling_rate_var,
+            mean_speed = mean_speed, var_speed = var_speed
+        )
     }, by = "trj_id" ]
-    dataset[ , H_dist2 := {
-        h_dist = haversine( rawlng, rawlat )
-        c( 0, h_dist  )
+    trip_summary
+}
+
+join_external_distances = function( summary_data, Azure_data, OSRM_data ){
+    summary_data[ Azure_data, c("azure_dist", "azure_eta") :={
+        list( i.azure_dist, i.azure_ETA )
+    }, on = "trj_id" ]
+    summary_data[ OSRM_data, c("OSRM_dist", "OSRM_eta") :={
+        list( i.OSRM_dist, i.OSRM_duration )
+    }, on = "trj_id" ]
+    NULL
+}
+
+add_landmarks = function( summary_data, big_kmeans ){
+    dbscan_big_clusters_mat = as.matrix(big_clusters)
+    cluster_names = paste0( "C", big_clusters$cluster )
+
+    summary_data[ , c("trip_start1", "trip_end1") := {
+        start_coord = c(start_x, start_y)
+        start_coord = matrix( start_coord, ncol = 2, nrow = 1 )
+        x = haversine2( start_coord, dbscan_big_clusters_mat[,1:2] )
+        closest_pt = which.min(x)
+        if ( x[ closest_pt ] < 2 ){
+            trip_start = cluster_names[ closest_pt ]
+        } else{
+            trip_start = "generic"
+        }
+        
+        end_coord = c(end_x, end_y)
+        end_coord = matrix( end_coord, ncol = 2, nrow = 1 )
+        x = haversine2( end_coord, dbscan_big_clusters_mat[,1:2] )
+        closest_pt = which.min(x)
+        if ( x[ closest_pt ] < 2 ){
+            trip_end = cluster_names[ closest_pt ]
+        } else{
+            trip_end = "generic"
+        }
+        list( trip_start, trip_end )
     }, by = "trj_id" ]
     
-    dataset[ , date_ := .POSIXct(pingtimestamp) ]
-    dataset[ , pingtimestamp := NULL ]
-    
-    dataset[ , weekday := {
-        weekday = format( date_, "%a" )
-        weekday = factor( weekday,
-            levels = c("Sun", "Mon", "Tue", "Wed",
-                "Thu", "Fri", "Sat") )
-        weekday
+    summary_data[ , c("trip_start", "trip_end") := {
+        trip_start_F = factor( trip_start1 )
+        trip_end_F = factor( trip_end1 )
+        
+        trip_start_F2 = relevel( trip_start_F, "generic" )
+        trip_end_F2 = relevel( trip_end_F, "generic" )
+        list( trip_start_F2, trip_end_F2 )
     } ]
     
-    dataset[ , hour := {
-        hour = format( date_, "%H" )
-        hour = as.numeric( hour )
-        hour
-    } ]
-    
-    dataset[ , speed_test := {
-        speed_est = H_dist / c( 0, as.numeric(diff(date)) )
-    }, by = "trj_id" ]
-    
-    dataset[ , is_weekend := {
-        weekday %in% c("Sat", "Sun")
-    } ]
-    
-    dataset[ , rush_hour := {
-        rush_hour = rep( "No", .N )
-        rush_hour[hour > 7 & hour < 10] = "Morning"
-        rush_hour[hour > 17 & hour < 20] = "Night"
-        factor( rush_hour )
-        } ]
-    
-    dataset
+    summary_data[ , c("trip_start1", "trip_end1") := NULL ]
 }
 
 split_dataset = function( data, seed, p ){

@@ -1,0 +1,465 @@
+---
+title: 'Deriving variables: Distance'
+author: "Don Li"
+date: "05/06/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library( data.table )
+library( caret )
+library( mgcv )
+source( "G:/azure_hackathon/data/Don/utility.R" )
+```
+
+# Data and stuff
+
+```{r eval = FALSE}
+load( "G:/azure_hackathon/dataset/trip_summary3_landmarks.RData" )
+
+set.seed(1)
+data_subset = trip_summary[ sample.int( .N, 7000 ) ]
+
+save( data_subset, 
+    file = "G:/azure_hackathon/dataset/deriving_variables/derive_dist.RData" )
+```
+
+# What are we doing here?
+
+In this document, we want to consider predicting path distance. You will note that in the model inputs, path distance is not a given input:
+
+* latitude_origin
+* longitude_origin
+* latitude_destination
+* longitude_destination
+* hour_of_day
+* day_of_week
+
+Although we can compute the distance as the crow flies (CF), we will also need the path distance. In our ETA model, we will use path distance, but we will treat it as a missing value. Therefore, we will need some model-based imputation to get some path distance information.
+
+Brief note: The landmarks variables made the models really bad. Probably because the factors force complete pooling of observations and fragments the data too much.
+
+A view of the variables before we start.
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/derive_dist.RData" )
+head( data_subset )
+```
+
+Partition the data. Take 25% for an out-of-bag set. Take the 75% for 7-fold CV. If we need to optimise the hyperparameters, they will be done using random search.
+
+
+```{r eval = FALSE}
+data_subset[ , c("trip_start", "trip_end", "trj_id", "timediff",
+    "N", "sampling_rate", "sampling_rate_var", "mean_speed",
+    "var_speed" ) := NULL ]
+
+set.seed(99)
+inTrain = createDataPartition( data_subset$path_dist, p = 0.75 )
+
+data_subset1 = copy( data_subset )
+data_subset1[ , path_dist2 := NULL ]
+
+training_set = data_subset1[ inTrain$Resample1 ]
+test_set = data_subset1[ -inTrain$Resample1 ]
+
+cv_folds = 7
+cv_fold_id = createFolds( training_set$path_dist, k = cv_folds, returnTrain = T )
+train_control = trainControl( 
+    method = "cv", number = cv_folds,
+    verboseIter = TRUE, search = "grid", 
+    index = cv_fold_id, savePredictions = "final"
+)
+
+save( inTrain, training_set, test_set, train_control, 
+    file = "G:/azure_hackathon/dataset/deriving_variables/datasets.RData" )
+```
+
+# Baseline
+
+For our baselines, we will use the Azure and OSRM distances.
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/datasets.RData" )
+azure_baseline = sqrt( mean( (test_set$path_dist - test_set$azure_dist)^2 ) )
+azure_baseline
+
+osrm_baseline = sqrt( mean( (test_set$path_dist - test_set$OSRM_dist)^2 ) )
+osrm_baseline
+```
+
+
+# Linear regression
+
+Linear regression. All second-order interactions, but some of the weird ones removed. Some quadratics for the start/end locations.
+
+```{r eval=FALSE}
+model_str_lm = "path_dist ~ .*. +
+    I(start_x^2) + I(start_y^2) + I(end_x^2) +  I(end_y^2) -
+    start_y:end_y - start_x:end_x
+"
+model_formula_lm = as.formula(model_str_lm)
+
+lm_ = train( form = model_formula_lm,
+    data = training_set,
+    metric = "RMSE", method = "lm", trControl = train_control)
+
+
+lm_results = data.table( lm_$results )
+lm_pred = data.table( lm_$pred )
+setorder( lm_pred, rowIndex )
+
+save( lm_, lm_results, lm_pred, 
+    file = "G:/azure_hackathon/dataset/deriving_variables/lm.RData" )
+```
+
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/lm.RData" )
+lm_results
+```
+
+CV error is `r round(lm_results$RMSE,3)`. Better than out baselines.
+
+# Elastic net
+
+Elastic net.
+
+```{r eval = FALSE}
+n_enet = 50
+enet_tunegrid = data.frame(
+    lambda = runif( n_enet, 0, 1e-1 ),
+    fraction = runif( n_enet, 0.2, 1 )
+)
+enet_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "enet", trControl = train_control,
+    tuneGrid = enet_tunegrid, standardize = TRUE, intercept = TRUE
+    )
+
+enet_results = data.table( enet_$results )
+enet_pred = data.table( enet_$pred )
+setorder( enet_pred, rowIndex )
+
+save( enet_, enet_results, enet_pred, 
+    file = "G:/azure_hackathon/dataset/deriving_variables/enet.RData" )
+```
+
+RMSE is around the same as the linear model.
+
+```{r fig.height=6, fig.width=5}
+load( "G:/azure_hackathon/dataset/deriving_variables/enet.RData" )
+enet_results[ which.min(RMSE) ]
+par( mfrow = c(2, 1 ) )
+enet_results[ , {
+    plot( fraction, RMSE, type = "o" )
+    nu_order = order(lambda)
+    plot( lambda[nu_order], RMSE[nu_order], type = "o" )
+} ]
+```
+
+# Partial least squares
+
+PLS.
+
+```{r eval = FALSE}
+full_X = ncol( model.matrix( model_formula_lm, training_set) )
+pls_tunegrid = data.frame( ncomp = 1:full_X )
+pls_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "pls", trControl = train_control,
+    tuneGrid = pls_tunegrid
+    )
+
+pls_results = data.table( pls_$results )
+pls_pred = data.table( pls_$pred )
+setorder( pls_pred, rowIndex )
+
+save( pls_, pls_results, pls_pred, 
+    file = "G:/azure_hackathon/dataset/deriving_variables/pls.RData" )
+```
+
+
+```{r fig.height=4, fig.width=4}
+load( "G:/azure_hackathon/dataset/deriving_variables/pls.RData" )
+pls_results[ which.min(RMSE) ]
+pls_results[ RMSE < 2.3, {
+    plot( ncomp, RMSE, type = "o" )
+} ]
+```
+
+# Principal components regression
+
+PCR.
+
+```{r eval = FALSE}
+full_X = ncol( model.matrix( model_formula_lm, training_set) )
+pcr_tunegrid = data.frame( ncomp = 1:full_X )
+pcr_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "pcr", trControl = train_control,
+    tuneGrid = pcr_tunegrid
+    )
+
+pcr_results = data.table( pcr_$results )
+pcr_pred = data.table( pcr_$pred )
+setorder( pcr_pred, rowIndex )
+
+save( pcr_, pcr_results, pcr_pred, 
+    file = "G:/azure_hackathon/dataset/deriving_variables/pcr.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/pcr.RData" )
+pcr_results[ which.min(RMSE) ]
+pcr_results[ RMSE < 2.3, {
+    plot( ncomp, RMSE, type = "o" )
+} ]
+```
+
+# KNN
+
+KNN.
+
+```{r eval = FALSE}
+k_grid = data.frame( k = 1:30 )
+
+knn_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "knn", trControl = train_control,
+    tuneGrid = k_grid
+    )
+
+knn_results = data.table( knn_$results )
+knn_pred = data.table( knn_$pred )
+setorder( knn_pred, rowIndex )
+
+save( knn_, knn_results, knn_pred,
+    file = "G:/azure_hackathon/dataset/deriving_variables/knn.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/knn.RData" )
+knn_results[ which.min(RMSE) ]
+knn_results[ , plot( k, RMSE, type = "o" ) ]
+```
+
+# CART
+
+Use an Exponential distribution for our random search.
+
+```{r eval = FALSE}
+cp_grid = data.frame( cp = rexp( 100, 1/0.001 ) )
+
+rpart_ = train( path_dist ~ ., 
+    data = training_set,
+    metric = "RMSE", method = "rpart", trControl = train_control,
+    tuneGrid = cp_grid
+    )
+
+# Feed the values back
+cp_grid = data.frame( cp = rexp( 100, 1/rpart_$bestTune$cp ) )
+
+rpart_ = train( path_dist ~ ., 
+    data = training_set,
+    metric = "RMSE", method = "rpart", trControl = train_control,
+    tuneGrid = cp_grid
+    )
+
+rpart_results = data.table( rpart_$results )
+rpart_pred = data.table( rpart_$pred )
+setorder( rpart_pred, rowIndex )
+
+save( rpart_, rpart_results, rpart_pred,
+    file = "G:/azure_hackathon/dataset/deriving_variables/rpart.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/rpart.RData" )
+rpart_results[ which.min(RMSE) ]
+plot( rpart_results$cp, rpart_results$RMSE, type = "l" )
+```
+
+# GAM splines
+Generalised additive model using splines
+
+```{r eval = FALSE}
+gam_grid = expand.grid(
+    select = F,
+    method = c( "GACV.Cp", "REML", "ML" )
+)
+
+gam_ = train( path_dist ~ ., data = training_set,
+    metric = "RMSE", method = "gam", trControl = train_control,
+    tuneGrid = gam_grid
+)
+
+gam_results = data.table( gam_$results )
+gam_pred = data.table( gam_$pred )
+setorder( gam_pred, rowIndex )
+
+save( gam_, gam_results, gam_pred,
+    file = "G:/azure_hackathon/dataset/deriving_variables/gam_spline.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/gam_spline.RData" )
+gam_results[ which.min(RMSE) ]
+```
+
+# Stacking
+
+```{r eval = FALSE}
+training_OOF = data.table(
+    lm = lm_pred$pred,
+    enet = enet_pred$pred,
+    pls = pls_pred$pred,
+    pcr = pcr_pred$pred,
+    knn = knn_pred$pred, 
+    rpart = rpart_pred$pred,
+    gam = gam_pred$pred,
+    path_dist = training_set$path_dist
+)
+
+test_OOF = data.table(
+    lm = predict( lm_, test_set ),
+    enet = predict( enet_, test_set ),
+    pls = predict( pls_, test_set ),
+    pcr = predict( pcr_, test_set ),
+    knn = predict( knn_, test_set ),
+    rpart = predict( rpart_, test_set ),
+    gam = predict( gam_, test_set ),
+    path_dist = test_set$path_dist
+)
+
+stacking_model_formula = as.formula( "path_dist ~ ." )
+
+stacked_tunegrid = data.frame( ncomp = 1:(ncol(training_OOF)-1) )
+stacking = train( stacking_model_formula, data = training_OOF,
+    metric = "RMSE", method = "pls", trControl = train_control,
+    tuneGrid = stacked_tunegrid
+    )
+
+stacking_results = data.table( stacking$results )
+stack_pred_OOF = predict( stacking, test_OOF )
+
+save( stacking_results, stack_pred_OOF, test_OOF,
+    file = "G:/azure_hackathon/dataset/deriving_variables/stack.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/dataset/deriving_variables/stack.RData" )
+
+rmse_ = function( m ){
+    p = predict( m, test_set )
+    sqrt( mean( ( p - test_set$path_dist )^2 ))
+}
+
+stacked_rmse = sqrt( mean( ( stack_pred_OOF - test_OOF$path_dist )^2 ) )
+
+all_rmse = rbind(
+    as.matrix(sqrt( colMeans( ( test_OOF - test_OOF$path_dist )^2 ) )),
+    stack = stacked_rmse
+)
+
+all_rmse[ order(all_rmse), ]
+```
+
+Stacking does a pretty good job.
+
+# Conclusion
+
+Stack a bunch of models for imputing distance.
+
+Recall that I have a bad distance where I swap the longitude and the latitudes in the calculation. I don't know why, but it ends up being quite good in the model. I suspect it is like a PCA kind of effect.
+
+To impute the proper Haversine, I will impute the terrible Haversine first:
+
+* Impute the Haversine2 distance (longs and lats swapped).
+* Use the Haversine2 with the other variables to impute the Haversine (longs and lats right way).
+
+```{r eval = FALSE}
+load( "G:/azure_hackathon/dataset/deriving_variables/derive_dist.RData" )
+source( "G:/azure_hackathon/data/Don/impute_distances.R" )
+
+data_subset[ , c("trip_start", "trip_end", "trj_id", "timediff",
+    "N", "sampling_rate", "sampling_rate_var", "mean_speed",
+    "var_speed" ) := NULL ]
+
+set.seed(99)
+inTrain = createDataPartition( data_subset$path_dist, p = 0.75 )
+
+data_subset1 = copy( data_subset )
+data_subset1[ , path_dist := NULL ]
+
+training_set = data_subset1[ inTrain$Resample1 ]
+test_set = data_subset1[ -inTrain$Resample1 ]
+
+cv_folds = 7
+cv_fold_id = createFolds( training_set$path_dist, k = cv_folds, returnTrain = T )
+train_control = trainControl( 
+    method = "cv", number = cv_folds,
+    verboseIter = FALSE, 
+    search = "grid", 
+    index = cv_fold_id, savePredictions = "final",
+    returnData = FALSE
+)
+
+impute_dist2 = train_dist_impute_model( 2, train_control, training_set, test = FALSE )
+imputed_dist2 = dist_impute_model_predict( impute_dist2, data_subset1 )
+
+data_subset1 = copy( data_subset )
+data_subset1[ , path_dist2 := NULL ]
+data_subset1[ , path_dist2_impute := imputed_dist2 ]
+
+training_set = data_subset1[ inTrain$Resample1 ]
+
+impute_dist1 = train_dist_impute_model( 1, train_control, training_set, test = FALSE )
+imputed_dist1 = dist_impute_model_predict( impute_dist1, data_subset1 )
+
+data_subset[ , path_dist2_impute := imputed_dist2 ]
+data_subset[ , path_dist_impute := imputed_dist1 ]
+data_subset[ , path_dist2 := NULL ]
+
+data_subset_with_dist = copy( data_subset )
+
+load( "G:/azure_hackathon/dataset/deriving_variables/derive_dist.RData" )
+
+data_subset[ data_subset_with_dist, c("path_dist_impute","path_dist2_impute") := {
+    list( i.path_dist_impute, i.path_dist2_impute )
+}, on = c("start_x", "start_y", "weekday", "hour", "end_x", "end_y") ]
+
+data_subset[ , path_dist := NULL ]
+data_subset[ , path_dist2 := NULL ]
+
+save( 
+    data_subset,
+    file = "G:/azure_hackathon/dataset/summary1_imputed_dist.RData" )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

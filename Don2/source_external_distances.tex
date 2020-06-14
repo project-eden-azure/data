@@ -1,0 +1,248 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Sourcing external distances},
+            pdfauthor={Don Li},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+% grffile has become a legacy package: https://ctan.org/pkg/grffile
+\IfFileExists{grffile.sty}{%
+\usepackage{grffile}
+}{}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Sourcing external distances}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Don Li}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{12/06/2020}
+
+
+\begin{document}
+\maketitle
+
+\hypertarget{join-external-path-data}{%
+\section{Join external path data}\label{join-external-path-data}}
+
+Sourcing path data from Azure Maps and OSRM. The source code for the
+functions needed is contained in \texttt{external\_routing.R}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{( data.table )}
+\KeywordTok{library}\NormalTok{( osrmr )}
+\KeywordTok{source}\NormalTok{( }\StringTok{"G:/azure_hackathon/data/Don2/distance_functions.R"}\NormalTok{ )}
+
+\CommentTok{# Make a data frame to attach the OSRM distances}
+\NormalTok{trip_summary =}\StringTok{ }\NormalTok{all_data[ , \{}
+\NormalTok{    trip_time =}\StringTok{ }\KeywordTok{difftime}\NormalTok{( date_[.N], date_[}\DecValTok{1}\NormalTok{], }\DataTypeTok{units =} \StringTok{"s"}\NormalTok{ )}
+\NormalTok{    trip_time =}\StringTok{ }\KeywordTok{as.numeric}\NormalTok{(trip_time)}
+    \KeywordTok{list}\NormalTok{(}
+        \DataTypeTok{lat1 =}\NormalTok{ rawlat[}\DecValTok{1}\NormalTok{], }\DataTypeTok{lng1 =}\NormalTok{ rawlng[}\DecValTok{1}\NormalTok{],}
+        \DataTypeTok{lat2 =}\NormalTok{ rawlat[.N], }\DataTypeTok{lng2 =}\NormalTok{ rawlng[.N],}
+        \DataTypeTok{known_dist =} \KeywordTok{sum}\NormalTok{( H_dist ),}
+        \DataTypeTok{known_time =}\NormalTok{ trip_time}
+\NormalTok{    )}
+\NormalTok{\}, by =}\StringTok{ "trj_id"}\NormalTok{ ]}
+
+\NormalTok{trip_summary[ , }\KeywordTok{c}\NormalTok{(}\StringTok{"OSMR_dist"}\NormalTok{) }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\NormalTok{\{}
+    \KeywordTok{cat}\NormalTok{( }\StringTok{"############}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
+\NormalTok{    status =}\StringTok{ "Fail"}
+\NormalTok{    attempt =}\StringTok{ }\DecValTok{0}
+    \ControlFlowTok{while}\NormalTok{( status }\OperatorTok{==}\StringTok{ "Fail"}\NormalTok{ )\{}
+\NormalTok{        attempt =}\StringTok{ }\NormalTok{attempt }\OperatorTok{+}\StringTok{ }\DecValTok{1}
+\NormalTok{        message =}\StringTok{ }\KeywordTok{paste0}\NormalTok{( }\StringTok{"Request: "}\NormalTok{, trj_id, }
+            \StringTok{". Attempt: "}\NormalTok{, attempt )}
+        \KeywordTok{cat}\NormalTok{( message, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
+
+\NormalTok{        route_info =}\StringTok{ }\KeywordTok{osmr_routing}\NormalTok{( lat1, lng1, lat2, lng2, }\DataTypeTok{localhost =} \OtherTok{FALSE}\NormalTok{ )}
+        
+        \ControlFlowTok{if}\NormalTok{ ( }\OperatorTok{!}\StringTok{ "try-error"} \OperatorTok{%in%}\StringTok{ }\KeywordTok{class}\NormalTok{(route_info) )\{}
+\NormalTok{            status =}\StringTok{ "Success"}
+\NormalTok{        \}}
+\NormalTok{        message =}\StringTok{ }\KeywordTok{paste0}\NormalTok{( }\StringTok{"Status: "}\NormalTok{, status, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
+        \KeywordTok{cat}\NormalTok{( message, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
+\NormalTok{    \}}
+\NormalTok{    n =}\StringTok{ }\KeywordTok{which}\NormalTok{( trj_id }\OperatorTok{==}\StringTok{ }\NormalTok{trip_summary}\OperatorTok{$}\NormalTok{trj_id )}
+\NormalTok{    message =}\StringTok{ }\KeywordTok{paste0}\NormalTok{( }\StringTok{"Trip "}\NormalTok{, n, }\StringTok{" out of "}\NormalTok{, }\KeywordTok{length}\NormalTok{(trip_summary}\OperatorTok{$}\NormalTok{trj_id) )}
+    \KeywordTok{cat}\NormalTok{( message, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
+    
+\NormalTok{    route_geom =}\StringTok{ }\NormalTok{route_info}\OperatorTok{$}\NormalTok{routes[[}\DecValTok{1}\NormalTok{]]}\OperatorTok{$}\NormalTok{geometry}
+\NormalTok{    route_path =}\StringTok{ }\KeywordTok{decode_geom}\NormalTok{( route_geom, }\DataTypeTok{precision =} \DecValTok{5}\NormalTok{ )}
+\NormalTok{    trip_dist =}\StringTok{ }\KeywordTok{sum}\NormalTok{( }\KeywordTok{haversine}\NormalTok{( route_path[,}\StringTok{"lat"}\NormalTok{], route_path[,}\StringTok{"lng"}\NormalTok{] ) )}
+    \KeywordTok{list}\NormalTok{( }\DataTypeTok{OSMR_dist =}\NormalTok{ trip_dist )}
+\NormalTok{\}, by =}\StringTok{ "trj_id"}\NormalTok{ ]}
+
+\KeywordTok{save}\NormalTok{( trip_summary, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/external_paths/Azure_maps.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{azure_key =}\StringTok{ }\KeywordTok{readLines}\NormalTok{( }\StringTok{"../data/keys_and_stuff/azure_maps.txt"}\NormalTok{ )}
+
+\NormalTok{trip_summary[ }\KeywordTok{is.na}\NormalTok{(azure_dist), }\KeywordTok{c}\NormalTok{(}\StringTok{"azure_dist"}\NormalTok{, }\StringTok{"azure_ETA"}\NormalTok{) }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\NormalTok{\{}
+    \KeywordTok{cat}\NormalTok{( trj_id, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
+\NormalTok{    route =}\StringTok{ }\KeywordTok{try}\NormalTok{(\{}
+        \KeywordTok{azure_route}\NormalTok{( lat1, lng1, lat2, lng2, azure_key )}
+\NormalTok{    \})}
+    \ControlFlowTok{if}\NormalTok{ ( }\StringTok{"try-error"} \OperatorTok{%in%}\StringTok{ }\KeywordTok{class}\NormalTok{( route ) )\{}
+\NormalTok{        lat1 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lat1, }\DecValTok{4}\NormalTok{ )}
+\NormalTok{        lng1 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lng1, }\DecValTok{4}\NormalTok{ )}
+\NormalTok{        lat2 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lat2, }\DecValTok{4}\NormalTok{ )}
+\NormalTok{        lng2 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lng2, }\DecValTok{4}\NormalTok{ )}
+\NormalTok{        route =}\StringTok{ }\KeywordTok{try}\NormalTok{(\{}
+            \KeywordTok{azure_route}\NormalTok{( lat1, lng1, lat2, lng2, azure_key )}
+\NormalTok{        \})}
+\NormalTok{    \}}
+    \ControlFlowTok{if}\NormalTok{ ( }\StringTok{"try-error"} \OperatorTok{%in%}\StringTok{ }\KeywordTok{class}\NormalTok{( route ) )\{}
+\NormalTok{        lat1 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lat1, }\DecValTok{3}\NormalTok{ )}
+\NormalTok{        lng1 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lng1, }\DecValTok{3}\NormalTok{ )}
+\NormalTok{        lat2 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lat2, }\DecValTok{2}\NormalTok{ )}
+\NormalTok{        lng2 =}\StringTok{ }\KeywordTok{round}\NormalTok{( lng2, }\DecValTok{2}\NormalTok{ )}
+\NormalTok{        route =}\StringTok{ }\KeywordTok{try}\NormalTok{(\{}
+            \KeywordTok{azure_route}\NormalTok{( lat1, lng1, lat2, lng2, azure_key )}
+\NormalTok{        \})}
+\NormalTok{    \}}
+\NormalTok{    azure_dist =}\StringTok{ }\NormalTok{route}\OperatorTok{$}\NormalTok{metadata}\OperatorTok{$}\NormalTok{lengthInMeters}\OperatorTok{/}\DecValTok{1000}
+    \KeywordTok{list}\NormalTok{( }\DataTypeTok{azure_dist =}\NormalTok{ azure_dist )}
+\NormalTok{\}, by =}\StringTok{ "trj_id"}\NormalTok{ ]}
+
+\KeywordTok{save}\NormalTok{( trip_summary, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/external_paths/OSRM.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+Join the datasets
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/external_paths/Azure_maps.RData"}\NormalTok{ )}
+\NormalTok{azure_summary =}\StringTok{ }\NormalTok{trip_summary}
+\KeywordTok{load}\NormalTok{( }\StringTok{"G:/azure_hackathon/datasets2/external_paths/OSRM.RData"}\NormalTok{ )}
+\NormalTok{osrm_summary =}\StringTok{ }\NormalTok{trip_summary}
+
+\NormalTok{external_distance_summary =}\StringTok{ }\NormalTok{azure_summary}
+\NormalTok{external_distance_summary[ osrm_summary, OSMR_dist }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\NormalTok{\{}
+\NormalTok{    i.OSMR_dist}
+\NormalTok{\}, on =}\StringTok{ "trj_id"}\NormalTok{ ]}
+
+\KeywordTok{save}\NormalTok{( external_distance_summary, }
+    \DataTypeTok{file =} \StringTok{"G:/azure_hackathon/datasets2/external_paths/external_dist.RData"}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}

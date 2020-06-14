@@ -1,0 +1,337 @@
+---
+title: 'Deriving variables: Speed'
+author: "Don Li"
+date: "05/06/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library( data.table )
+library( caret )
+library( mgcv )
+```
+
+# Data and stuff
+
+This follows on from the imputation of distance.
+
+```{r eval = FALSE}
+load( "G:/azure_hackathon/datasets2/model_subset/testing_subset1_imputedist.RData" )
+load( "G:/azure_hackathon/datasets2/model_subset/testing_historicals.RData" )
+historical_vars = colnames( historicals )[
+    grepl( "historic", colnames( historicals ) )
+    ]
+training_set[ historicals, eval(historical_vars) := {
+    list( i.historic_timediff,
+        i.historic_crow_dist,
+        i.historic_path_dist,
+        i.historic_sampling_rate,
+        i.historic_mean_speed,
+        i.historic_log_var_speed
+    )
+}, on = c("weekday", "hour") ]
+test_set[ historicals, eval(historical_vars) := {
+    list( i.historic_timediff,
+        i.historic_crow_dist,
+        i.historic_path_dist,
+        i.historic_sampling_rate,
+        i.historic_mean_speed,
+        i.historic_log_var_speed
+    )
+}, on = c("weekday", "hour") ]
+
+vars_to_rm = c("trj_id", "timediff", "sampling_rate",
+    "sampling_rate_var", "var_speed" )
+training_set[ , eval(vars_to_rm) := NULL ]
+```
+
+# What are we doing?
+
+In this document, we want to consider predicting average journey speed. You will note that in the model inputs, speed is not a given input:
+
+* latitude_origin
+* longitude_origin
+* latitude_destination
+* longitude_destination
+* hour_of_day
+* day_of_week
+
+Clearly, speed is a useful variable if we want to predict ETA. Speed is included in the trip summaries as `mean_pt_speed` and `var_pt_speed`. The speed is computed by taking the distance between GPS pings and dividing by the time between them.
+
+We will first impute `mean_pt_speed` and then `var_pd_speed`.
+
+# Linear regression
+
+```{r eval = FALSE}
+yvar = "mean_speed"
+xvars = setdiff( names(training_set), yvar )
+par( mfrow = c(5,4 ) )
+col  = rgb( 0, 0, 0, 0.25 )
+for( x in xvars ){
+    plot( training_set[[x]], training_set[[yvar]],
+        pch = 16, col = col, ylab = yvar,
+        xlab = x, main = x )
+    lines( smooth.spline( training_set[[x]], training_set[[yvar]] ),
+        col = "red")
+}
+
+model_formula_lm = mean_speed ~ . +
+    rush_hour * I(crow_dist^2) +
+    rush_hour * I(path_dist_impute^2) +
+    I(hour^2) + I(hour^3) +
+    I(start_y^2) + I(end_y^2) +
+    I( azure_dist^2 ) + I( OSRM_dist^2 ) +
+    I( path_dist_impute^2 ) + I(path_dist2_impute^2) +
+    crow_dist:azure_dist + crow_dist:OSRM_dist + crow_dist:path_dist_impute +
+    crow_dist:historic_path_dist + crow_dist:historic_crow_dist + crow_dist:historic_sampling_rate +
+    weekday:start_y + weekday:start_x + weekday:end_x + weekday:end_y +
+    weekday:path_dist_impute + weekday:azure_dist + weekday:OSRM_dist +
+    hour * rush_hour +
+    rush_hour:start_y + rush_hour:start_x + rush_hour:end_x + rush_hour:end_y
+
+lm_ = train( form = model_formula_lm,
+    data = training_set,
+    metric = "RMSE", method = "lm", trControl = train_control)
+
+lm_results = data.table( lm_$results )
+lm_pred = data.table( lm_$pred )
+setorder( lm_pred, rowIndex )
+
+save( lm_, lm_results, lm_pred, 
+    file = "G:/azure_hackathon/datasets2/expo_speed/lm.RData" )
+```
+
+
+```{r}
+load( "G:/azure_hackathon/datasets2/expo_speed/lm.RData" )
+lm_results
+```
+
+# Elastic net
+
+Elastic net. No interactions in the enet because it is very slow.
+
+```{r eval = FALSE}
+n_enet = 50
+enet_tunegrid = data.frame(
+    lambda = rexp( n_enet, 1/0.000000001 ),
+    fraction = runif( n_enet, 0.75, 1 )
+)
+enet_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "enet", trControl = train_control,
+    tuneGrid = enet_tunegrid, standardize = TRUE, intercept = TRUE
+    )
+
+enet_results = data.table( enet_$results )
+enet_pred = data.table( enet_$pred )
+setorder( enet_pred, rowIndex )
+
+save( enet_, enet_results, enet_pred, 
+    file = "G:/azure_hackathon/datasets2/expo_speed/enet.RData" )
+```
+
+```{r fig.height=6, fig.width=5}
+load( "G:/azure_hackathon/datasets2/expo_speed/enet.RData" )
+enet_results[ which.min(RMSE) ]
+par( mfrow = c(2, 1 ) )
+enet_results[ , {
+    plot( fraction, RMSE, type = "o" )
+    nu_order = order(lambda)
+    plot( lambda[nu_order], RMSE[nu_order], type = "o" )
+} ]
+```
+
+# Partial least squares
+
+PLS.
+
+```{r eval = FALSE}
+full_X = ncol( model.matrix( model_formula_lm, training_set) )
+
+pls_tunegrid = data.frame( ncomp = 1:full_X )
+
+pls_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "pls", trControl = train_control,
+    tuneGrid = pls_tunegrid, scale = T
+    )
+
+pls_results = data.table( pls_$results )
+pls_pred = data.table( pls_$pred )
+setorder( pls_pred, rowIndex )
+
+save( pls_, pls_results, pls_pred, 
+    file = "G:/azure_hackathon/datasets2/expo_speed/pls.RData" )
+```
+
+
+```{r fig.height=4, fig.width=4}
+load( "G:/azure_hackathon/datasets2/expo_speed/pls.RData" )
+pls_results[ which.min(RMSE) ]
+pls_results[ RMSE < 0.005, {
+    plot( ncomp, RMSE, type = "o" )
+} ]
+```
+
+# Principal components regression
+
+PCR.
+
+```{r eval = FALSE}
+full_X = ncol( model.matrix( model_formula_lm, training_set) )
+pcr_tunegrid = data.frame( ncomp = 1:full_X )
+pcr_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "pcr", trControl = train_control,
+    tuneGrid = pcr_tunegrid, scale = T
+    )
+
+pcr_results = data.table( pcr_$results )
+pcr_pred = data.table( pcr_$pred )
+setorder( pcr_pred, rowIndex )
+
+save( pcr_, pcr_results, pcr_pred, 
+    file = "G:/azure_hackathon/datasets2/expo_speed/pcr.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/datasets2/expo_speed/pcr.RData" )
+pcr_results[ which.min(RMSE) ]
+pcr_results[ RMSE < 0.0025, {
+    plot( ncomp, RMSE, type = "o" )
+} ]
+```
+
+# KNN
+
+KNN.
+
+```{r eval = FALSE}
+k_grid = data.frame( k = 15:50 )
+
+knn_ = train( form = model_formula_lm, data = training_set,
+    metric = "RMSE", method = "knn", trControl = train_control,
+    tuneGrid = k_grid
+    )
+
+knn_results = data.table( knn_$results )
+knn_pred = data.table( knn_$pred )
+setorder( knn_pred, rowIndex )
+
+save( knn_, knn_results, knn_pred,
+    file = "G:/azure_hackathon/datasets2/expo_speed/knn.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/datasets2/expo_speed/knn.RData" )
+knn_results[ which.min(RMSE) ]
+knn_results[ , plot( k, RMSE, type = "o" ) ]
+```
+
+# CART
+
+Use an Exponential distribution for our random search.
+
+```{r eval = FALSE}
+cp_grid = data.frame( cp = rexp( 100, 1/0.001 ) )
+
+rpart_ = train( mean_speed ~ ., 
+    data = training_set,
+    metric = "RMSE", method = "rpart", trControl = train_control,
+    tuneGrid = cp_grid
+    )
+
+rpart_results = data.table( rpart_$results )
+rpart_pred = data.table( rpart_$pred )
+setorder( rpart_pred, rowIndex )
+
+save( rpart_, rpart_results, rpart_pred,
+    file = "G:/azure_hackathon/datasets2/expo_speed/rpart.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/datasets2/expo_speed/rpart.RData" )
+rpart_results[ which.min(RMSE) ]
+plot( rpart_results$cp, rpart_results$RMSE, type = "l" )
+```
+
+# GAM splines
+Generalised additive model using splines
+
+```{r eval = FALSE}
+gam_grid = expand.grid(
+    select = F,
+    method = c( "GACV.Cp" )
+)
+
+gam_ = train( mean_speed ~ ., data = training_set,
+    metric = "RMSE", method = "gam", trControl = train_control,
+    tuneGrid = gam_grid
+)
+
+gam_results = data.table( gam_$results )
+gam_pred = data.table( gam_$pred )
+setorder( gam_pred, rowIndex )
+
+save( gam_, gam_results, gam_pred,
+    file = "G:/azure_hackathon/datasets2/expo_speed/gam_spline.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/datasets2/expo_speed/gam_spline.RData" )
+gam_results[ which.min(RMSE) ]
+```
+
+# Stacking
+
+```{r eval = FALSE}
+training_OOF = data.table(
+    lm = lm_pred$pred,
+    pls = pls_pred$pred,
+    pcr = pcr_pred$pred,
+    knn = knn_pred$pred, 
+    rpart = rpart_pred$pred,
+    gam = gam_pred$pred,
+    mean_speed = training_set$mean_speed
+)
+
+test_OOF = data.table(
+    lm = predict( lm_, test_set ),
+    pls = predict( pls_, test_set ),
+    pcr = predict( pcr_, test_set ),
+    knn = predict( knn_, test_set ),
+    rpart = predict( rpart_, test_set ),
+    gam = predict( gam_, test_set ),
+    mean_speed = test_set$mean_speed
+)
+
+stacking_model_formula = as.formula( "mean_speed ~ ." )
+
+stacked_tunegrid = data.frame( ncomp = 1:(ncol(training_OOF)-1) )
+stacking = train( stacking_model_formula, data = training_OOF,
+    metric = "RMSE", method = "pls", trControl = train_control,
+    tuneGrid = stacked_tunegrid
+    )
+
+stacking_results = data.table( stacking$results )
+stack_pred_OOF = predict( stacking, test_OOF )
+
+save( stacking_results, stack_pred_OOF, test_OOF,
+    file = "G:/azure_hackathon/datasets2/expo_speed/stack.RData" )
+```
+
+```{r}
+load( "G:/azure_hackathon/datasets2/expo_speed/stack.RData" )
+
+stacked_rmse = sqrt( mean( ( stack_pred_OOF - test_OOF$mean_speed )^2 ) )
+
+all_rmse = rbind(
+    as.matrix(sqrt( colMeans( ( test_OOF - test_OOF$mean_speed )^2 ) )),
+    stack = stacked_rmse
+)
+
+all_rmse[ order(all_rmse), ]
+```
+
+# Conclusion
+
+Stack a bunch of models for imputing mean point speed. Also do this for the variance fo the point speed.
