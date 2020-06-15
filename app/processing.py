@@ -1,4 +1,6 @@
 import requests
+import math
+from math import radians, cos, sin, asin, sqrt
 
 # Returns distance predicted by Azure Maps in kilometres.
 def azure_distance(lat1, lng1, lat2, lng2):
@@ -37,3 +39,20 @@ def osrm_distance(lat1, lng1, lat2, lng2, local=False):
 	distance = data["routes"][0]["distance"]
 
 	return float(distance) / 1000
+
+def haversine_distance(lat1, lng1, lat2, lng2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    Returns the distance in kilometres
+    """
+    # Convert decimal degrees to radians 
+    lng1, lat1, lng2, lat2 = map(radians, map(float, [lng1, lat1, lng2, lat2]))
+
+    # Haversine formula 
+    dlon = lng2 - lng1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6378.137 # Radius of earth in kilometers. Use 3956 for miles
+    return c * r

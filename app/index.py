@@ -5,6 +5,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import processing
+# import rpy2.robjects as robjects
 
 # Define the application.
 app = Flask(__name__)
@@ -12,6 +13,9 @@ app.debug = False
 
 # Random secret key, so session cookies cannot be modified to gain access to other sessions even by the administrators.
 app.secret_key = os.urandom(24)
+
+# R setup.
+# r = robjects.r
 
 # App routing.
 @app.route('/')
@@ -34,7 +38,6 @@ def query_page():
 	weekday = request.args.get('weekday')
 
 	# Validate data
-	# TODO
 	try:
 		hour = int(hour)
 		weekday = int(weekday)
@@ -52,6 +55,8 @@ def query_page():
 	azure_distance = processing.azure_distance(lat1, lng1, lat2, lng2)
 	# Get OSRM distance. Change local to True when we have a local version of OSRM running.
 	osrm_distance = processing.osrm_distance(lat1, lng1, lat2, lng2, local=False)
+	# Haversine / crow-flies distance
+	crow_distance = processing.haversine_distance(lat1, lng1, lat2, lng2)
 
 	# Return the predicted ETA
 	return "Successfully received inputs: {}, {}, {}, {}, {}, {}".format(lat1, lng1, lat2, lng2, hour, weekday)
