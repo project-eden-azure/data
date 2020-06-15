@@ -56,3 +56,32 @@ def haversine_distance(lat1, lng1, lat2, lng2):
     c = 2 * asin(sqrt(a)) 
     r = 6378.137 # Radius of earth in kilometers. Use 3956 for miles
     return c * r
+
+# Determines if an hour is a rush hour.
+def get_rush_hour(hour):
+	rush_hour = "No"
+	if hour > 7 and hour < 10:
+		rush_hour = "Morning"
+	elif hour > 17 and hour < 20:
+		rush_hour = "Night"
+	elif hour > 10 and hour < 17:
+		rush_hour = "Work"
+	return rush_hour
+
+def get_weekday(weekday):
+	if weekday == 0:
+		return "Mon"
+	elif weekday == 1:
+		return "Tue"
+	elif weekday == 2:
+		return "Wed"
+	elif weekday == 3:
+		return "Thu"
+	elif weekday == 4:
+		return "Fri"
+	elif weekday == 5:
+		return "Sat"
+	elif weekday == 6:
+		return "Sun"
+
+	return None

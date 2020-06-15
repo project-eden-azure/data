@@ -6,6 +6,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import processing
 # import rpy2.robjects as robjects
+import json
 
 # Define the application.
 app = Flask(__name__)
@@ -58,8 +59,17 @@ def query_page():
 	# Haversine / crow-flies distance
 	crow_distance = processing.haversine_distance(lat1, lng1, lat2, lng2)
 
+	rush_hour = processing.get_rush_hour(hour)
+	f_weekday = processing.get_weekday(weekday)
+
+	predicted_time = 0
+
+	# Uncomment when we are connected to the model to make predictions.
+	# robjects.r("predicted <- predict_time({}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(lat1, lng1, lat2, lng2, hour, f_weekday, rush_hour, azure_distance, osrm_distance, crow_distance))
+	# predicted_time = robjects.r("predicted[1,1]")
+
 	# Return the predicted ETA
-	return "Successfully received inputs: {}, {}, {}, {}, {}, {}".format(lat1, lng1, lat2, lng2, hour, weekday)
+	return json.dumps({"eta": predicted_time})
 
 if __name__ == "__main__":
 	app.debug = False
