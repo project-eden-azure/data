@@ -8,6 +8,7 @@ import multiprocessing as mp
 import collections
 import itertools
 import math
+from math import radians, cos, sin, asin, sqrt
 
 # Find the true distances travelled along roads by trip ID using MapReduce.
 # (This is the road-by-road Haversine distance rather than the Euclidean distance.)
@@ -66,21 +67,26 @@ class SimpleMapReduce(object):
 		return reduced_values
 
 # Haversine distance - convert latitude/longitude to kilometres
-def measure(lat1, lon1, lat2, lon2):
-	lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
-	R = 6378.137 # Radius of earth in kilometres
-	
+# lat/lng in degrees
+def measure(lat1, lon1, lat2, lon2):	
 	# Latitudes/longitudes may be negative so log may not work
 	# dLat1 = log(lat2) + log(pi) - log(180)
 	# dlat2 = log(lat1) + log(pi) - log(180)
 	# dLay = exp( logsumexp( dLat1, dlat2 ) )
-	
-	dLat = (lat2  - lat1) * math.pi / 180
-	dLon = (lon2 - lon1) * math.pi / 180
-	a = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(lat1 * math.pi / 180) * math.cos(lat2 * math.pi / 180) * math.sin(dLon/2) * math.sin(dLon/2)
-	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-	d = R * c
-	return d
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6378.137 # Radius of earth in kilometers. Use 3956 for miles
+    return c * r
 
 # Reads parquet data from a file and maps by trip id
 def map_function(filename):
@@ -112,14 +118,58 @@ def reduce_function(bundle):
 	average_speed = total_distance * 1000 / total_time
 	return (key, total_distance, average_speed)
 
-# Run the distance 
+# Run the distance - MapReduce type - incorrect values but better than the correct values?
+# if __name__ == '__main__':
+# 	import glob
+
+# 	input_files = glob.glob('part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet')
+# 	mapper = SimpleMapReduce(map_function, reduce_function)
+# 	distances = mapper(input_files)
+
+# 	df = pd.DataFrame(distances, columns=['ID', 'km', 'average_speed'])
+
+# 	df.to_csv("distances_km.csv", index=False)
+
+# 
 if __name__ == '__main__':
 	import glob
 
-	input_files = glob.glob('part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet')
-	mapper = SimpleMapReduce(map_function, reduce_function)
-	distances = mapper(input_files)
+	input_files = glob.glob('part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet') #'mini.parquet')#
 
-	df = pd.DataFrame(distances, columns=['ID', 'km', 'average_speed'])
+	output = []
+	for filename in input_files:
+		data = pq.read_table(filename).to_pandas()
 
-	df.to_csv("distances_km.csv", index=False)
+		trip_ids = set(data['trj_id'])
+		# For each trip
+		for trip_id in trip_ids:
+			if trip_id is None or trip_id == '':
+				continue
+			# Filter by trip id and also sort by timestamp
+			items = data[data['trj_id'] == trip_id]
+			items = items.sort_values("pingtimestamp")
+			items = items.drop_duplicates(subset="pingtimestamp")
+
+			items['prevlat'] = items['rawlat'].shift(1)
+			items['prevlng'] = items['rawlng'].shift(1)
+
+			items['distance'] = items.apply(lambda row: measure(row['prevlat'], row['prevlng'], row['rawlat'], row['rawlng']), axis=1)
+
+			items = items.fillna(0)
+			total_distance = items['distance'].sum()
+
+			# for i, row in items.iterrows():
+			# 	if first:
+			# 		first = False
+			# 		last_i = i
+			# 		continue
+			# 	prevlat = 
+			# 	distance = measure(row['rawlat'], row['rawlng'], prev_row['rawlat'], prev_row['rawlng'])
+			# 	total_distance += distance
+			# 	last_i = i
+
+			output.append([trip_id, total_distance])
+
+
+		df = pd.DataFrame(output, columns=['ID', 'km'])
+		df.to_csv("distances_km_{}.csv".format(filename), index=False)
