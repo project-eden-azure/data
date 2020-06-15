@@ -4,6 +4,7 @@ import os
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+import processing
 
 # Define the application.
 app = Flask(__name__)
@@ -38,14 +39,15 @@ def query_page():
 		hour = int(hour)
 		weekday = int(weekday)
 	except:
-		return "Invalid hour or weekday - should be numbers between 0-23 and 1-7.", 422
+		return "Invalid hour or weekday - should be numbers between 0-23 and 0-6.", 422
 	if hour < 0 or hour > 23:
 		return "Invalid hour: {}".format(hour), 422
-	if weekday < 1 or weekday > 7:
+	if weekday < 0 or weekday > 6:
 		return "Invalid weekday: {}".format(weekday), 422
 
 	# Make a prediction
 	# TODO
+	azure_distance = processing.azure_distance(lat1, lng1, lat2, lng2)
 
 	# Return the predicted ETA
 	return "Successfully received inputs: {}, {}, {}, {}, {}, {}".format(lat1, lng1, lat2, lng2, hour, weekday)
