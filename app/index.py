@@ -47,7 +47,10 @@ def query_page():
 
 	# Make a prediction
 	# TODO
+	# Get the Azure Maps distance
 	azure_distance = processing.azure_distance(lat1, lng1, lat2, lng2)
+	# Get OSRM distance. Change local to True when we have a local version of OSRM running.
+	osrm_distance = processing.osrm_distance(lat1, lng1, lat2, lng2, local=False)
 
 	# Return the predicted ETA
 	return "Successfully received inputs: {}, {}, {}, {}, {}, {}".format(lat1, lng1, lat2, lng2, hour, weekday)
