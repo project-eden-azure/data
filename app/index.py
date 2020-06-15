@@ -47,7 +47,8 @@ def query_page():
 
 	# Make a prediction
 	# TODO
-	# Get the Azure Maps distance
+	# Get the Azure Maps distance.
+	# TODO - use departAt parameter in Azure maps (which takes a date-time in the format 1996-12-19T16:39:57-08:00)
 	azure_distance = processing.azure_distance(lat1, lng1, lat2, lng2)
 	# Get OSRM distance. Change local to True when we have a local version of OSRM running.
 	osrm_distance = processing.osrm_distance(lat1, lng1, lat2, lng2, local=False)

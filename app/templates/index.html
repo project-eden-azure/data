@@ -3,13 +3,93 @@
 <head>
 	<meta charset="utf-8">
 	<title>Project Eden</title>
+	<style type="text/css">
+		* {
+			font-family: sans-serif;
+		}
+
+		body {
+			background: #ececec;
+		}
+
+		#content {
+			width: 800px;
+			margin: 48px auto;
+			background: white;
+			padding: 32px 24px;
+		}
+
+		ul {
+			padding: 12px;
+			border: 1px dashed black;
+		}
+
+		ul li {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			margin: 4px 0;
+			display: block;
+		}
+
+		label {
+			width: 200px;
+			display: inline-block;
+		}
+
+		input[type="text"] {
+			width: 200px;
+			display: inline-block;
+		}
+
+		.button {
+			padding: 0;
+			border: none;
+			background: none;
+		     background: #2196F3;
+		     border-bottom: 7px solid #1E88E5;
+		     border-radius: 7px;
+		     cursor: pointer;
+		     -webkit-transition: background-color 0.2s ease;
+		     -moz-transition: background-color 0.2s ease;
+		     -o-transition: background-color 0.2s ease;
+		     transition: background-color 0.2s ease;
+		     display: inline-block;
+		     color: #fff;
+		     font-size: 16px;
+		     padding: 12px;
+		}
+
+		.button:hover {
+		     background: #1E88E5;
+		}
+
+		.button:focus {
+			outline: none;
+		}
+	</style>
 </head>
 <body>
-	<header>
-		<h1>Grab predictions</h1>
-	</header>
-	<section>
-		<p>Please go to <em>query?originLat=LAT&originLong=LNG&destinationLat=LAT&destinationLong=LNG&hour=HOUR&weekday=WEEKDAY</em> to generate ETA predictions for Grab</p>
+	<section id="content">
+		<header>
+			<h1>Grab predictions</h1>
+		</header>
+		<section>
+			<p>Please go to <em>/query?originLat=LAT&originLong=LNG&destinationLat=LAT&destinationLong=LNG&hour=HOUR&weekday=WEEKDAY</em> to generate ETA predictions for Grab.</p>
+			<p>For example, <a href="/query?originLat=1.3644&originLong=103.9915&destinationLat=1.2966&destinationLong=103.7764&hour=1&weekday=1">/query?originLat=1.3644&originLong=103.9915&destinationLat=1.2966&destinationLong=103.7764&hour=1&weekday=1</a></p>
+			<p>Alternately, use the form below.</p>
+			<form action="/query?" method="GET">
+				<ul>
+					<li><label for="originLat">originLat</label> <input type="text" name="originLat"/></li>
+					<li><label for="originLong">originLong</label> <input type="text" name="originLong"/></li>
+					<li><label for="destinationLat">destinationLat</label> <input type="text" name="destinationLat"/></li>
+					<li><label for="destinationLong">destinationLong</label> <input type="text" name="destinationLong"/></li>
+					<li><label for="hour">Hour (0-23)</label> <input type="text" name="hour"/></li>
+					<li><label for="weekday">Weekday (0-6)</label> <input type="text" name="weekday"/></li>
+				</ul>
+				<input type="submit" value="Submit" class="button" />
+			</form>
+		</section>
 	</section>
 </body>
 </html>
