@@ -1,10 +1,11 @@
 from flask import Flask, render_template, url_for, session, request, g
 import sqlite3
 import os
-from tornado.wsgi import WSGIContainer
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+# from tornado.wsgi import WSGIContainer
+# from tornado.httpserver import HTTPServer
+# from tornado.ioloop import IOLoop
 import processing
+# TODO - uncomment on live server
 # import rpy2.robjects as robjects
 import json
 
@@ -16,6 +17,7 @@ app.debug = False
 app.secret_key = os.urandom(24)
 
 # R setup.
+# TODO - uncomment on live server.
 # r = robjects.r
 
 # App routing.
@@ -50,22 +52,26 @@ def query_page():
 		return "Invalid weekday: {}".format(weekday), 422
 
 	# Make a prediction
-	# TODO
 	# Get the Azure Maps distance.
-	# TODO - use departAt parameter in Azure maps (which takes a date-time in the format 1996-12-19T16:39:57-08:00)
+	# TODO (non-urgent) - use departAt parameter in Azure maps (which takes a date-time in the format 1996-12-19T16:39:57-08:00)
 	azure_distance = processing.azure_distance(lat1, lng1, lat2, lng2)
-	# Get OSRM distance. Change local to True when we have a local version of OSRM running.
+	# Get OSRM distance.
+	# TODO - Change local to True when we have a local version of OSRM running. Or leave as False for stability.
 	osrm_distance = processing.osrm_distance(lat1, lng1, lat2, lng2, local=False)
 	# Haversine / crow-flies distance
 	crow_distance = processing.haversine_distance(lat1, lng1, lat2, lng2)
 
+	# Whether it's a rush hour as a factor
 	rush_hour = processing.get_rush_hour(hour)
+	# Weekday as a factor
 	f_weekday = processing.get_weekday(weekday)
 
 	predicted_time = 0
 
-	# Uncomment when we are connected to the model to make predictions.
-	# robjects.r("predicted <- predict_time({}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(lat1, lng1, lat2, lng2, hour, f_weekday, rush_hour, azure_distance, osrm_distance, crow_distance))
+	# TODO - Uncomment when we are connected to the model to make predictions.
+	# The predict_time function may have to convert rush hour and weekday into a factor.
+	# robjects.r("predicted <- predict_time({}, {}, {}, {}, {}, '{}', '{}', {}, {}, {})".format(lat1, lng1, lat2, lng2, hour, f_weekday, rush_hour, azure_distance, osrm_distance, crow_distance))
+	# We expect a matrix of predictions with 1 row - the first element should be the stacked prediction.
 	# predicted_time = robjects.r("predicted[1,1]")
 
 	# Return the predicted ETA
@@ -74,6 +80,8 @@ def query_page():
 if __name__ == "__main__":
 	app.debug = False
 	app.run(host = "0.0.0.0", port = 80, threaded = True)
-	#http_server = HTTPServer(WSGIContainer(app))
-	#http_server.listen(80)
-	#IOLoop.instance().start()
+	# This is for running as a standalone web application. You can also use nginx or other
+	# load balancing things on Azure to deploy it.
+	# http_server = HTTPServer(WSGIContainer(app))
+	# http_server.listen(80)
+	# IOLoop.instance().start()
