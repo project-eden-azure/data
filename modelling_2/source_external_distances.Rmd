@@ -65,7 +65,7 @@ save( trip_summary,
 ```{r eval = FALSE}
 azure_key = readLines( "../data/keys_and_stuff/azure_maps.txt" )
 
-trip_summary[ is.na(azure_dist), c("azure_dist", "azure_ETA") := {
+trip_summary[ is.na(azure_dist), c("azure_dist") := {
     cat( trj_id, "\n" )
     route = try({
         azure_route( lat1, lng1, lat2, lng2, azure_key )

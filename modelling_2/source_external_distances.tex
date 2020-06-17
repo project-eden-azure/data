@@ -193,7 +193,7 @@ functions needed is contained in \texttt{external\_routing.R}.
 \begin{Highlighting}[]
 \NormalTok{azure_key =}\StringTok{ }\KeywordTok{readLines}\NormalTok{( }\StringTok{"../data/keys_and_stuff/azure_maps.txt"}\NormalTok{ )}
 
-\NormalTok{trip_summary[ }\KeywordTok{is.na}\NormalTok{(azure_dist), }\KeywordTok{c}\NormalTok{(}\StringTok{"azure_dist"}\NormalTok{, }\StringTok{"azure_ETA"}\NormalTok{) }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\NormalTok{\{}
+\NormalTok{trip_summary[ }\KeywordTok{is.na}\NormalTok{(azure_dist), }\KeywordTok{c}\NormalTok{(}\StringTok{"azure_dist"}\NormalTok{) }\OperatorTok{:}\ErrorTok{=}\StringTok{ }\NormalTok{\{}
     \KeywordTok{cat}\NormalTok{( trj_id, }\StringTok{"}\CharTok{\textbackslash{}n}\StringTok{"}\NormalTok{ )}
 \NormalTok{    route =}\StringTok{ }\KeywordTok{try}\NormalTok{(\{}
         \KeywordTok{azure_route}\NormalTok{( lat1, lng1, lat2, lng2, azure_key )}
