@@ -1,7 +1,0 @@
-
-model{
-    for ( i in 1:length(time_spent) ){
-        time_spent[i] ~ dgamma( 10, 5 )
-        time_pred[i] ~ dnorm( time_spent[i], 1/5^2 ) T(0,)
-    }
-}
