@@ -1,0 +1,300 @@
+starting worker pid=6448 on localhost:11946 at 01:20:37.199
+starting worker pid=12780 on localhost:11946 at 01:20:37.385
+starting worker pid=8768 on localhost:11946 at 01:20:37.583
+starting worker pid=8292 on localhost:11946 at 01:20:37.782
+starting worker pid=14764 on localhost:11946 at 01:20:37.969
+starting worker pid=1092 on localhost:11946 at 01:20:38.155
+starting worker pid=11800 on localhost:11946 at 01:20:38.339
+Loading required package: caret
+Loading required package: lattice
+Loading required package: ggplot2
+loaded caret and set parent environment
+Loading required package: caret
+Loading required package: lattice
+Loading required package: ggplot2
+loaded caret and set parent environment
+Loading required package: caret
+Loading required package: lattice
+Loading required package: ggplot2
+loaded caret and set parent environment
+Loading required package: caret
+Loading required package: lattice
+Loading required package: ggplot2
+loaded caret and set parent environment
+Loading required package: caret
+Loading required package: lattice
+Loading required package: ggplot2
+loaded caret and set parent environment
+Loading required package: caret
+Loading required package: lattice
+Loading required package: ggplot2
+loaded caret and set parent environment
+Loading required package: caret
+Loading required package: lattice
+Loading required package: ggplot2
+loaded caret and set parent environment
++ Fold1: intercept=TRUE 
++ Fold2: intercept=TRUE 
++ Fold3: intercept=TRUE + Fold4: intercept=TRUE 
++ Fold5: intercept=TRUE 
++ Fold6: intercept=TRUE 
++ Fold7: intercept=TRUE 
+- Fold4: intercept=TRUE 
+- Fold5: intercept=TRUE 
+- Fold3: intercept=TRUE 
+- Fold1: intercept=TRUE 
+- Fold7: intercept=TRUE 
+- Fold2: intercept=TRUE 
+- Fold6: intercept=TRUE 
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
++ Fold1: lambda=4.661e-04, fraction=0.9676 
++ Fold1: lambda=4.590e-04, fraction=0.9631 
++ Fold1: lambda=1.918e-04, fraction=0.9258 
++ Fold1: lambda=4.032e-04, fraction=0.9443 
++ Fold1: lambda=5.160e-04, fraction=0.9758 
++ Fold1: lambda=3.498e-04, fraction=0.9384 
++ Fold1: lambda=2.918e-04, fraction=0.9072 
+- Fold1: lambda=5.160e-04, fraction=0.9758 
++ Fold1: lambda=1.814e-04, fraction=0.9696 
+- Fold1: lambda=4.032e-04, fraction=0.9443 
+- Fold1: lambda=4.590e-04, fraction=0.9631 
+- Fold1: lambda=2.918e-04, fraction=0.9072 
++ Fold1: lambda=1.803e-04, fraction=0.9762 
++ Fold1: lambda=1.800e-04, fraction=0.9579 
++ Fold1: lambda=1.636e-04, fraction=0.9438 
+- Fold1: lambda=3.498e-04, fraction=0.9384 
+- Fold1: lambda=1.918e-04, fraction=0.9258 
++ Fold1: lambda=1.623e-04, fraction=0.9595 
++ Fold1: lambda=1.619e-04, fraction=0.9067 
+- Fold1: lambda=4.661e-04, fraction=0.9676 
++ Fold1: lambda=1.578e-04, fraction=0.9609 
+- Fold1: lambda=1.814e-04, fraction=0.9696 
++ Fold1: lambda=1.541e-04, fraction=0.9052 
+- Fold1: lambda=1.623e-04, fraction=0.9595 
+- Fold1: lambda=1.636e-04, fraction=0.9438 
++ Fold1: lambda=1.436e-04, fraction=0.9328 
++ Fold1: lambda=1.359e-04, fraction=0.9304 
+- Fold1: lambda=1.803e-04, fraction=0.9762 
++ Fold1: lambda=1.305e-04, fraction=0.9245 
+- Fold1: lambda=1.800e-04, fraction=0.9579 
++ Fold1: lambda=1.255e-04, fraction=0.9896 
+- Fold1: lambda=1.578e-04, fraction=0.9609 
+- Fold1: lambda=1.619e-04, fraction=0.9067 
++ Fold1: lambda=1.119e-04, fraction=0.9115 
++ Fold1: lambda=9.709e-05, fraction=0.9081 
+- Fold1: lambda=1.541e-04, fraction=0.9052 
++ Fold1: lambda=9.351e-05, fraction=0.9764 
+- Fold1: lambda=1.436e-04, fraction=0.9328 
++ Fold1: lambda=8.367e-05, fraction=0.9690 
+- Fold1: lambda=1.359e-04, fraction=0.9304 
++ Fold1: lambda=7.338e-05, fraction=0.9830 
+- Fold1: lambda=1.305e-04, fraction=0.9245 
++ Fold1: lambda=7.048e-05, fraction=0.9973 
+- Fold1: lambda=1.119e-04, fraction=0.9115 
++ Fold1: lambda=6.781e-05, fraction=0.9310 
+- Fold1: lambda=1.255e-04, fraction=0.9896 
++ Fold1: lambda=6.605e-05, fraction=0.9361 
+- Fold1: lambda=9.709e-05, fraction=0.9081 
++ Fold1: lambda=6.437e-05, fraction=0.9507 
+- Fold1: lambda=9.351e-05, fraction=0.9764 
++ Fold1: lambda=5.936e-05, fraction=0.9151 
+- Fold1: lambda=7.048e-05, fraction=0.9973 
++ Fold1: lambda=5.786e-05, fraction=0.9672 
+- Fold1: lambda=8.367e-05, fraction=0.9690 
++ Fold1: lambda=5.761e-05, fraction=0.9167 
+- Fold1: lambda=7.338e-05, fraction=0.9830 
++ Fold1: lambda=4.926e-05, fraction=0.9401 
+- Fold1: lambda=6.781e-05, fraction=0.9310 
++ Fold1: lambda=4.822e-05, fraction=0.9285 
+- Fold1: lambda=6.605e-05, fraction=0.9361 
++ Fold1: lambda=4.591e-05, fraction=0.9091 
+- Fold1: lambda=6.437e-05, fraction=0.9507 
++ Fold1: lambda=4.515e-05, fraction=0.9372 
+- Fold1: lambda=5.936e-05, fraction=0.9151 
++ Fold1: lambda=4.432e-05, fraction=0.9868 
+- Fold1: lambda=5.786e-05, fraction=0.9672 
++ Fold1: lambda=4.051e-05, fraction=0.9115 
+- Fold1: lambda=5.761e-05, fraction=0.9167 
++ Fold1: lambda=3.832e-05, fraction=0.9619 
+- Fold1: lambda=4.822e-05, fraction=0.9285 
++ Fold1: lambda=3.609e-05, fraction=0.9570 
+- Fold1: lambda=4.926e-05, fraction=0.9401 
+- Fold1: lambda=4.591e-05, fraction=0.9091 
+- Fold1: lambda=4.515e-05, fraction=0.9372 
++ Fold1: lambda=3.044e-05, fraction=0.9514 
++ Fold1: lambda=2.979e-05, fraction=0.9772 
++ Fold1: lambda=2.842e-05, fraction=0.9109 
+- Fold1: lambda=4.432e-05, fraction=0.9868 
++ Fold1: lambda=2.784e-05, fraction=0.9990 
+- Fold1: lambda=4.051e-05, fraction=0.9115 
++ Fold1: lambda=1.862e-05, fraction=0.9200 
+- Fold1: lambda=3.832e-05, fraction=0.9619 
++ Fold1: lambda=1.765e-05, fraction=0.9477 
+- Fold1: lambda=3.609e-05, fraction=0.9570 
++ Fold1: lambda=1.528e-05, fraction=0.9225 
+- Fold1: lambda=3.044e-05, fraction=0.9514 
++ Fold1: lambda=1.351e-05, fraction=0.9759 
+- Fold1: lambda=2.784e-05, fraction=0.9990 
++ Fold1: lambda=1.155e-05, fraction=0.9901 
+- Fold1: lambda=2.842e-05, fraction=0.9109 
++ Fold1: lambda=5.853e-06, fraction=0.9384 
+- Fold1: lambda=2.979e-05, fraction=0.9772 
++ Fold1: lambda=5.189e-06, fraction=0.9754 
+- Fold1: lambda=1.528e-05, fraction=0.9225 
++ Fold2: lambda=5.160e-04, fraction=0.9758 
+- Fold1: lambda=1.765e-05, fraction=0.9477 
++ Fold2: lambda=4.661e-04, fraction=0.9676 
+- Fold1: lambda=1.862e-05, fraction=0.9200 
++ Fold2: lambda=4.590e-04, fraction=0.9631 
+- Fold1: lambda=1.155e-05, fraction=0.9901 
++ Fold2: lambda=4.032e-04, fraction=0.9443 
+- Fold1: lambda=1.351e-05, fraction=0.9759 
++ Fold2: lambda=3.498e-04, fraction=0.9384 
+- Fold1: lambda=5.189e-06, fraction=0.9754 
++ Fold2: lambda=2.918e-04, fraction=0.9072 
+- Fold1: lambda=5.853e-06, fraction=0.9384 
++ Fold2: lambda=1.918e-04, fraction=0.9258 
+- Fold2: lambda=4.661e-04, fraction=0.9676 
++ Fold2: lambda=1.814e-04, fraction=0.9696 
+- Fold2: lambda=5.160e-04, fraction=0.9758 
++ Fold2: lambda=1.803e-04, fraction=0.9762 
+- Fold2: lambda=4.590e-04, fraction=0.9631 
++ Fold2: lambda=1.800e-04, fraction=0.9579 
+- Fold2: lambda=4.032e-04, fraction=0.9443 
++ Fold2: lambda=1.636e-04, fraction=0.9438 
+- Fold2: lambda=3.498e-04, fraction=0.9384 
++ Fold2: lambda=1.623e-04, fraction=0.9595 
+- Fold2: lambda=2.918e-04, fraction=0.9072 
++ Fold2: lambda=1.619e-04, fraction=0.9067 
+- Fold2: lambda=1.918e-04, fraction=0.9258 
++ Fold2: lambda=1.578e-04, fraction=0.9609 
+- Fold2: lambda=1.803e-04, fraction=0.9762 
++ Fold2: lambda=1.541e-04, fraction=0.9052 
+- Fold2: lambda=1.814e-04, fraction=0.9696 
++ Fold2: lambda=1.436e-04, fraction=0.9328 
+- Fold2: lambda=1.800e-04, fraction=0.9579 
++ Fold2: lambda=1.359e-04, fraction=0.9304 
+- Fold2: lambda=1.636e-04, fraction=0.9438 
++ Fold2: lambda=1.305e-04, fraction=0.9245 
+- Fold2: lambda=1.623e-04, fraction=0.9595 
++ Fold2: lambda=1.255e-04, fraction=0.9896 
+- Fold2: lambda=1.578e-04, fraction=0.9609 
++ Fold2: lambda=1.119e-04, fraction=0.9115 
+- Fold2: lambda=1.619e-04, fraction=0.9067 
++ Fold2: lambda=9.709e-05, fraction=0.9081 
+- Fold2: lambda=1.541e-04, fraction=0.9052 
++ Fold2: lambda=9.351e-05, fraction=0.9764 
+- Fold2: lambda=1.436e-04, fraction=0.9328 
++ Fold2: lambda=8.367e-05, fraction=0.9690 
+- Fold2: lambda=1.359e-04, fraction=0.9304 
++ Fold2: lambda=7.338e-05, fraction=0.9830 
+- Fold2: lambda=1.305e-04, fraction=0.9245 
++ Fold2: lambda=7.048e-05, fraction=0.9973 
+- Fold2: lambda=1.255e-04, fraction=0.9896 
++ Fold2: lambda=6.781e-05, fraction=0.9310 
+- Fold2: lambda=1.119e-04, fraction=0.9115 
++ Fold2: lambda=6.605e-05, fraction=0.9361 
+- Fold2: lambda=9.351e-05, fraction=0.9764 
++ Fold2: lambda=6.437e-05, fraction=0.9507 
+- Fold2: lambda=9.709e-05, fraction=0.9081 
++ Fold2: lambda=5.936e-05, fraction=0.9151 
+- Fold2: lambda=8.367e-05, fraction=0.9690 
++ Fold2: lambda=5.786e-05, fraction=0.9672 
+- Fold2: lambda=7.338e-05, fraction=0.9830 
++ Fold2: lambda=5.761e-05, fraction=0.9167 
+- Fold2: lambda=7.048e-05, fraction=0.9973 
++ Fold2: lambda=4.926e-05, fraction=0.9401 
+- Fold2: lambda=6.781e-05, fraction=0.9310 
++ Fold2: lambda=4.822e-05, fraction=0.9285 
+- Fold2: lambda=6.605e-05, fraction=0.9361 
++ Fold2: lambda=4.591e-05, fraction=0.9091 
+- Fold2: lambda=6.437e-05, fraction=0.9507 
++ Fold2: lambda=4.515e-05, fraction=0.9372 
+- Fold2: lambda=5.936e-05, fraction=0.9151 
++ Fold2: lambda=4.432e-05, fraction=0.9868 
+- Fold2: lambda=5.786e-05, fraction=0.9672 
++ Fold2: lambda=4.051e-05, fraction=0.9115 
+- Fold2: lambda=5.761e-05, fraction=0.9167 
++ Fold2: lambda=3.832e-05, fraction=0.9619 
+- Fold2: lambda=4.822e-05, fraction=0.9285 
++ Fold2: lambda=3.609e-05, fraction=0.9570 
+- Fold2: lambda=4.591e-05, fraction=0.9091 
++ Fold2: lambda=3.044e-05, fraction=0.9514 
+- Fold2: lambda=4.926e-05, fraction=0.9401 
++ Fold2: lambda=2.979e-05, fraction=0.9772 
+- Fold2: lambda=4.432e-05, fraction=0.9868 
++ Fold2: lambda=2.842e-05, fraction=0.9109 
+- Fold2: lambda=4.515e-05, fraction=0.9372 
++ Fold2: lambda=2.784e-05, fraction=0.9990 
+- Fold2: lambda=4.051e-05, fraction=0.9115 
++ Fold2: lambda=1.862e-05, fraction=0.9200 
+- Fold2: lambda=3.832e-05, fraction=0.9619 
++ Fold2: lambda=1.765e-05, fraction=0.9477 
+- Fold2: lambda=2.979e-05, fraction=0.9772 
++ Fold2: lambda=1.528e-05, fraction=0.9225 
+- Fold2: lambda=3.044e-05, fraction=0.9514 
++ Fold2: lambda=1.351e-05, fraction=0.9759 
+- Fold2: lambda=2.784e-05, fraction=0.9990 
++ Fold2: lambda=1.155e-05, fraction=0.9901 
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
+loaded caret and set parent environment
++ Fold1: ncomp=25 
++ Fold4: ncomp=25 
++ Fold2: ncomp=25 
++ Fold6: ncomp=25 
++ Fold5: ncomp=25 
++ Fold7: ncomp=25 
+ 
+- Fold5: ncomp=25 
+- Fold6: ncomp=25 
+- Fold2: ncomp=25 
+- Fold3: ncomp=25 
+- Fold4: ncomp=25 
+- Fold7: ncomp=25 
+- Fold1: ncomp=25 
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+package 'caret' was built under R version 3.6.3 
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+package 'caret' was built under R version 3.6.3 
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+package 'caret' was built under R version 3.6.3 
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+package 'caret' was built under R version 3.6.3 
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+package 'caret' was built under R version 3.6.3 
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+package 'caret' was built under R version 3.6.3 
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+package 'caret' was built under R version 3.6.3 
+Execution halted
