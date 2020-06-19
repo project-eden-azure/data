@@ -70,6 +70,7 @@ def query_page():
 
 	# TODO - Uncomment when we are connected to the model to make predictions.
 	# The predict_time function may have to convert rush hour and weekday into a factor.
+	# robjects.r("source('predict.R')")
 	# robjects.r("predicted <- predict_time({}, {}, {}, {}, {}, '{}', '{}', {}, {}, {})".format(lat1, lng1, lat2, lng2, hour, f_weekday, rush_hour, azure_distance, osrm_distance, crow_distance))
 	# We expect a matrix of predictions with 1 row - the first element should be the stacked prediction.
 	# predicted_time = robjects.r("predicted[1,1]")
