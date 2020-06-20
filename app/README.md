@@ -6,8 +6,8 @@ Then run either:
 
 `python3 -m flask run`
 
-Or:
+Or follow the instructions in the main page's README file for deploying in production mode.
 
-`python index.py`
+Upload predictions into a `model/` folder underneath this folder.
 
-Go to `localhost/query?originLat=LAT&originLong=LNG&destinationLat=LAT&destinationLong=LNG&hour=HOUR&weekday=WEEKDAY` to generate predictions (when a model is done).
+Go to `localhost/query?originLat=LAT&originLong=LNG&destinationLat=LAT&destinationLong=LNG&hour=HOUR&weekday=WEEKDAY` to generate predictions.
